@@ -29,6 +29,11 @@ jobs:
         run: pip install -r requirements.txt
 
       - name: Jalankan analisa
+        env:
+          # Opsional. Jika secret ini diisi, watchlist dan transaksi dibaca dari Supabase
+          # dan hasil analisa disimpan ke sana. Jika kosong, memakai saham.txt dan transaksi.csv.
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
         run: python analisa.py ${{ github.event.inputs.kode }}
 
       - name: Simpan hasil ke repo

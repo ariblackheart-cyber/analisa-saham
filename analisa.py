@@ -27,6 +27,7 @@ from candle import baca_candle
 from skor import BOBOT, hitung as hitung_skor
 import fundamental as fund
 import portofolio as porto
+import db
 from indikator import hitung_semua
 
 ROOT = Path(__file__).parent
@@ -445,10 +446,16 @@ def main():
     ap.add_argument("--csv", help="pakai file CSV, hanya untuk satu kode")
     ap.add_argument("--tanpa-fundamental", action="store_true", help="lewati data laporan keuangan")
     a = ap.parse_args()
-    kode_list = [k.upper() for k in a.kode] or [
-        s.strip().upper() for s in (ROOT / "saham.txt").read_text().splitlines()
-        if s.strip() and not s.startswith("#")]
-    trx = porto.baca(ROOT / "transaksi.csv")
+    sb = db.Supabase() if db.aktif() and not a.csv else None
+    if sb:
+        print("Memakai database Supabase.")
+        kode_list = [k.upper() for k in a.kode] or sb.watchlist()
+        trx = sb.transaksi()
+    else:
+        kode_list = [k.upper() for k in a.kode] or [
+            s.strip().upper() for s in (ROOT / "saham.txt").read_text().splitlines()
+            if s.strip() and not s.startswith("#")]
+        trx = porto.baca(ROOT / "transaksi.csv")
     if not a.kode:  # saham yang sedang dipegang ikut dianalisa
         for k in trx["kode"].unique():
             p = porto.posisi(trx, k)
@@ -481,6 +488,14 @@ def main():
         gambar(h, ROOT / "charts" / kode / "latest.png")
         (folder / f"{tgl}.md").write_text(laporan(h, f"../../charts/{kode}/{tgl}.png"), encoding="utf-8")
         (folder / "latest.md").write_text(laporan(h, f"../../charts/{kode}/latest.png"), encoding="utf-8")
+        if sb:
+            try:
+                sb.simpan_harga(kode, df)
+                sb.simpan_analisa(h)
+                sb.simpan_fundamental(h)
+            except Exception as e:
+                gagal.append(kode)
+                print(f"[{kode}] gagal menyimpan ke Supabase: {e}", file=sys.stderr)
         semua.append(h)
         print(f"[{kode}] {h['tanggal']} close {rp(h['t']['Close'])} -> {h['nilai']['label']} "
               f"({h['nilai']['total']:.1f}/10)")

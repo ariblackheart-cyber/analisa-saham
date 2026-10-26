@@ -80,6 +80,34 @@ Fee default: beli 0,15%, jual 0,25%. Ubah di `portofolio.py` sesuai sekuritas ka
 
 > ⚠️ Kalau repo ini **public**, isi `transaksi.csv` dan portofolio kamu bisa dilihat siapa saja. Jadikan repo **private** jika tidak ingin itu terjadi. GitHub Actions tetap gratis untuk pemakaian sebesar ini.
 
+## Database Supabase (opsional)
+
+Semua data bisa disimpan di satu database Supabase. Program tetap berjalan tanpa Supabase, karena saat itu ia memakai `saham.txt` dan `transaksi.csv`.
+
+| Tabel / view | Isi |
+|---|---|
+| `watchlist` | Daftar saham yang dianalisa (kolom `aktif` untuk menonaktifkan tanpa menghapus) |
+| `transaksi` | Catatan jual beli. Isi lewat Table Editor Supabase, bisa dari HP |
+| `harga_harian` | Harga OHLCV harian |
+| `analisa_harian` | Nilai tiap aspek, keputusan, indikator, level harga, dan rincian poin, per saham per hari |
+| `fundamental` | PER, PBV, ROE, DER, pertumbuhan, nilai fundamental, laba rugi per kuartal |
+| `analisa_terbaru` (view) | Analisa terakhir tiap saham |
+| `posisi` (view) | Lot, harga rata-rata, modal, untung/rugi, dan keputusan hari ini untuk saham yang dipegang |
+
+**Cara memasang:**
+
+1. Buat project di [supabase.com](https://supabase.com) (paket gratis cukup).
+2. Buka **SQL Editor**, tempel isi `supabase/schema.sql`, lalu klik **Run**.
+3. Buka **Project Settings → API**, lalu salin **Project URL** dan **service_role key**.
+4. Di GitHub, buka **Settings → Secrets and variables → Actions → New repository secret**, lalu tambahkan:
+   - `SUPABASE_URL`
+   - `SUPABASE_SERVICE_KEY` (isi dengan service_role key)
+5. (Opsional) Salin data lama: `python db.py impor-watchlist` dan `python db.py impor-transaksi`.
+
+Setelah terpasang, watchlist dan transaksi dibaca dari Supabase. Laporan Markdown dan grafik tetap disimpan di repo.
+
+> 🔒 **service_role key** punya akses penuh ke database. Simpan hanya di GitHub Secrets, jangan ditulis di file mana pun. Semua tabel memakai Row Level Security tanpa akses publik, jadi data transaksi tidak bisa dibaca orang lain, bahkan jika repo GitHub-nya public.
+
 ## Cara pakai
 
 **Menambah saham:** edit `saham.txt`, tulis satu kode per baris (tanpa `.JK`).
@@ -105,7 +133,9 @@ skor.py         penilaian 0–10 dan keputusan
 portofolio.py   harga rata-rata, untung/rugi, simulasi average down
 transaksi.csv   catatan jual beli kamu
 fundamental.py  data laporan keuangan dan nilai fundamental
-saham.txt       daftar saham
+saham.txt       daftar saham (jika tidak memakai Supabase)
+db.py           penghubung ke Supabase
+supabase/       skema database
 reports/        laporan harian per saham
 charts/         grafik harian per saham
 ```
