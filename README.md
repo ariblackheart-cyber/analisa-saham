@@ -106,7 +106,7 @@ Semua data bisa disimpan di satu database Supabase. Program tetap berjalan tanpa
 
 Setelah terpasang, watchlist dan transaksi dibaca dari Supabase. Laporan Markdown dan grafik tetap disimpan di repo.
 
-> 🔒 **service_role key** punya akses penuh ke database. Simpan hanya di GitHub Secrets, jangan ditulis di file mana pun. Semua tabel memakai Row Level Security tanpa akses publik, jadi data transaksi tidak bisa dibaca orang lain, bahkan jika repo GitHub-nya public.
+> 🔒 **service_role key** punya akses penuh ke database. Simpan hanya di GitHub Secrets, jangan ditulis di file mana pun. Semua tabel memakai Row Level Security tanpa akses publik, jadi isi database tidak bisa dibaca orang lain. Namun ringkasan portofolio di README dan bagian posisi di laporan tetap ditulis ke repo, jadi tetap gunakan repo **private** jika tidak ingin posisi kamu terlihat.
 
 ## Cara pakai
 
