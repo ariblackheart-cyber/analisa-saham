@@ -24,6 +24,8 @@ import matplotlib.pyplot as plt
 import pandas as pd
 
 from candle import baca_candle
+from skor import BOBOT, hitung as hitung_skor
+import fundamental as fund
 from indikator import hitung_semua
 
 ROOT = Path(__file__).parent
@@ -202,21 +204,10 @@ def analisa(kode: str, df: pd.DataFrame) -> dict:
           f"Resistance 20 hari (high tertinggi): {rp(d['High'].tail(20).max())}.",
           f"Resistance terdekat lain: MA20 {rp(t['MA20'])}, MA100 {rp(t['MA100'])}."]
 
-    total = sum(a for a, _ in skor)
-    if total >= 3:
-        kesimpulan = "Cenderung bullish"
-    elif total >= 1:
-        kesimpulan = "Sedikit bullish"
-    elif total <= -3:
-        kesimpulan = "Cenderung bearish"
-    elif total <= -1:
-        kesimpulan = "Sedikit bearish"
-    else:
-        kesimpulan = "Netral / menunggu konfirmasi"
+    nilai = hitung_skor(d, t, y, pola)
 
     return dict(kode=kode, tanggal=tanggal, data=d, t=t, y=y, tren=tren, candle_dasar=candle_dasar,
-                pola=pola, vol=vol, sto=sto, lain=lain, bb=bb, sr=sr, skor=skor, total=total,
-                kesimpulan=kesimpulan, tren_label=tren_label)
+                pola=pola, vol=vol, sto=sto, lain=lain, bb=bb, sr=sr, nilai=nilai, tren_label=tren_label)
 
 
 # ---------------------------------------------------------------- grafik
@@ -264,6 +255,58 @@ def gambar(hasil: dict, path: Path, n: int = 60):
 
 
 # ---------------------------------------------------------------- laporan
+def bar(nilai: float) -> str:
+    isi = round(nilai)
+    return "█" * isi + "░" * (10 - isi)
+
+
+IKON = {"BELI": "🟢", "PANTAU": "🟡", "TUNGGU": "⚪", "HINDARI": "🔴"}
+
+
+def blok_nilai(h: dict) -> list[str]:
+    n = h["nilai"]
+    r = n["rencana"]
+    L = [f"### {IKON[n['label']]} Keputusan teknikal: **{n['label']}** — nilai total **{n['total']:.1f}/10**", "",
+         n["alasan"], "",
+         "| Aspek | Nilai | |", "|---|---|---|"]
+    for nama, (nilai, _) in n["aspek"].items():
+        L.append(f"| {nama} | **{nilai:.1f}**/10 | `{bar(nilai)}` |")
+    L += ["", "**Level harga (otomatis):**", "",
+          f"- Support 20 hari: {rp(r['support'])} · Resistance 20 hari: {rp(r['resist'])}",
+          f"- Batas rugi (stop loss): {rp(r['stop'])} (di bawah support atau −5%)",
+          f"- Target 1: {rp(r['target1'])} · Target 2: {rp(r['target2'])}",
+          f"- Rasio untung : rugi ke target 1 = {num(r['rr'], 2)} : 1"
+          + (" (kurang menarik, idealnya ≥ 1,5)" if not pd.isna(r['rr']) and r['rr'] < 1.5 else ""),
+          ""]
+    return L
+
+
+def blok_fundamental(h: dict) -> list[str]:
+    f = h.get("fund")
+    if not f:
+        return ["Data fundamental tidak diambil (mode CSV) atau tidak tersedia dari Yahoo Finance."]
+    v = h["fund_nilai"]
+    pct = lambda x: "-" if not fund._ok(x) else f"{x:.1%}"
+    der = f"{f['DER'] / 100:.2f}x" if fund._ok(f.get("DER")) else "-"
+    L = [f"**Nilai fundamental: {num(v)}/10 — {fund.label(v)}** "
+         "(terpisah dari keputusan teknikal; dipakai untuk menilai kualitas perusahaan jangka panjang).", "",
+         "| PER | PBV | ROE | DER | Margin laba | Pendapatan YoY | Laba YoY | Kapitalisasi |",
+         "|---|---|---|---|---|---|---|---|",
+         f"| {num(f.get('PER'))} | {num(f.get('PBV'), 2)} | {pct(f.get('ROE'))} | {der} | {pct(f.get('NPM'))} | "
+         f"{pct(f.get('growth_rev'))} | {pct(f.get('growth_laba'))} | "
+         f"{'-' if not fund._ok(f.get('MCAP')) else rp(f['MCAP'] / 1e9) + ' miliar'} |", ""]
+    if f.get("kuartal"):
+        L += ["Laporan laba rugi per kuartal (miliar Rp):", "", "| Periode | Pendapatan | Laba bersih |", "|---|---|---|"]
+        for k in f["kuartal"]:
+            pend = "-" if not fund._ok(k["pendapatan"]) else rp(k["pendapatan"] / 1e9)
+            L.append(f"| {k['periode']} | {pend} | {num(k['laba'] / 1e9, 1)} |")
+        L.append("")
+    if h["fund_rincian"]:
+        L += ["| Kondisi | Poin |", "|---|---|"] + [f"| {a} | {p:+.2f} |" for p, a in h["fund_rincian"]]
+    L += ["", "_Sumber: Yahoo Finance. Untuk keputusan penting, cocokkan dengan laporan resmi di idx.co.id._"]
+    return L
+
+
 def laporan(h: dict, chart: str) -> str:
     t, y = h["t"], h["y"]
     chg = t["Close"] - y["Close"]
@@ -275,8 +318,7 @@ def laporan(h: dict, chart: str) -> str:
          f"|---|---|---|---|---|---|",
          f"| {rp(t['Open'])} | {rp(t['High'])} | {rp(t['Low'])} | **{rp(t['Close'])}** | "
          f"{chg:+.0f} ({pct:+.2f}%) | {rp(t['Volume'])} |", "",
-         f"**Kesimpulan teknikal: {h['kesimpulan']}** (skor {h['total']:+d}). Tren pendek: {h['tren_label']}.", "",
-         "## 1. Candlestick", "", h["candle_dasar"], ""]
+         ] + blok_nilai(h) + ["## 1. Candlestick", "", h["candle_dasar"], ""]
     if h["pola"]:
         for nama, arah, ket in h["pola"]:
             tanda = "🟢" if arah > 0 else "🔴" if arah < 0 else "⚪"
@@ -289,24 +331,31 @@ def laporan(h: dict, chart: str) -> str:
     L += ["", "## 5. Bollinger Bands", ""] + [f"- {s}" for s in h["bb"]]
     L += ["", "## 6. MACD & RSI", ""] + [f"- {s}" for s in h["lain"]]
     L += ["", "## 7. Support & Resistance", ""] + [f"- {s}" for s in h["sr"]]
-    L += ["", "## 8. Rincian skor", "", "| Sinyal | Arah |", "|---|---|"]
-    for arah, alasan in h["skor"]:
-        L.append(f"| {alasan} | {'🟢 +1' if arah > 0 else '🔴 −1'} |")
-    if not h["skor"]:
-        L.append("| Tidak ada sinyal kuat | 0 |")
+    L += ["", "## 8. Fundamental (laporan keuangan)", ""] + blok_fundamental(h)
+    L += ["", "## 9. Cara nilai teknikal dihitung", "",
+          "Setiap aspek mulai dari **5** (netral), lalu ditambah atau dikurangi poin di bawah ini, "
+          "dan dibatasi 0–10. Nilai total = rata-rata berbobot.", ""]
+    for nama, (nilai, rincian) in h["nilai"]["aspek"].items():
+        L += [f"**{nama}: {nilai:.1f}/10** (bobot {BOBOT[nama]:.0%})", "", "| Kondisi | Poin |", "|---|---|"]
+        for poin, alasan in rincian:
+            L.append(f"| {alasan} | {poin:+.2f} |")
+        L.append("")
     L += ["", DISCLAIMER, ""]
     return "\n".join(L)
 
 
 def update_readme(semua: list[dict]):
     readme = ROOT / "README.md"
-    rows = ["| Saham | Tanggal | Close | Perubahan | Volume vs rata2 | Stoch RSI K | Kesimpulan |",
-            "|---|---|---|---|---|---|---|"]
+    semua = sorted(semua, key=lambda h: -h["nilai"]["total"])  # nilai tertinggi di atas
+    rows = ["| Saham | Tanggal | Close | Perubahan | Tren | Volume | Stoch | Momentum | Candle | Total | Keputusan | Fundamental |",
+            "|---|---|---|---|---|---|---|---|---|---|---|---|"]
     for h in semua:
         t, y = h["t"], h["y"]
         pct = (t["Close"] - y["Close"]) / y["Close"] * 100
         rows.append(f"| [{h['kode']}](reports/{h['kode']}/latest.md) | {h['tanggal']} | {rp(t['Close'])} | "
-                    f"{pct:+.2f}% | {num(t['Vol_ratio'], 2)}x | {num(t['SRSI_K'])} | {h['kesimpulan']} ({h['total']:+d}) |")
+                    f"{pct:+.2f}% | " + " | ".join(f"{v[0]:.1f}" for v in h["nilai"]["aspek"].values())
+                    + f" | **{h['nilai']['total']:.1f}** | {IKON[h['nilai']['label']]} {h['nilai']['label']} | "
+                    + f"{num(h.get('fund_nilai'))} {fund.label(h.get('fund_nilai')) if h.get('fund') else ''} |")
     blok = "<!-- RINGKASAN:START -->\n" + "\n".join(rows) + "\n<!-- RINGKASAN:END -->"
     teks = readme.read_text(encoding="utf-8")
     teks = re.sub(r"<!-- RINGKASAN:START -->.*?<!-- RINGKASAN:END -->", blok, teks, flags=re.S)
@@ -318,6 +367,7 @@ def main():
     ap = argparse.ArgumentParser(description="Analisa teknikal harian saham BEI")
     ap.add_argument("kode", nargs="*", help="kode saham, misal RAJA BBCA (default: isi saham.txt)")
     ap.add_argument("--csv", help="pakai file CSV, hanya untuk satu kode")
+    ap.add_argument("--tanpa-fundamental", action="store_true", help="lewati data laporan keuangan")
     a = ap.parse_args()
     kode_list = [k.upper() for k in a.kode] or [
         s.strip().upper() for s in (ROOT / "saham.txt").read_text().splitlines()
@@ -330,6 +380,13 @@ def main():
             if len(df) < 30:
                 raise ValueError(f"data terlalu sedikit ({len(df)} hari)")
             h = analisa(kode, df)
+            h["fund"] = None
+            if not a.csv and not a.tanpa_fundamental:
+                try:
+                    h["fund"] = fund.ambil(kode)
+                except Exception as e:
+                    print(f"[{kode}] data fundamental gagal: {e}", file=sys.stderr)
+            h["fund_nilai"], h["fund_rincian"] = fund.nilai(h["fund"]) if h["fund"] else (None, [])
         except Exception as e:  # lanjut ke saham lain
             gagal.append(kode)
             print(f"[{kode}] gagal: {e}", file=sys.stderr)
@@ -342,7 +399,8 @@ def main():
         (folder / f"{tgl}.md").write_text(laporan(h, f"../../charts/{kode}/{tgl}.png"), encoding="utf-8")
         (folder / "latest.md").write_text(laporan(h, f"../../charts/{kode}/latest.png"), encoding="utf-8")
         semua.append(h)
-        print(f"[{kode}] {h['tanggal']} close {rp(h['t']['Close'])} -> {h['kesimpulan']} ({h['total']:+d})")
+        print(f"[{kode}] {h['tanggal']} close {rp(h['t']['Close'])} -> {h['nilai']['label']} "
+              f"({h['nilai']['total']:.1f}/10)")
 
     if semua:
         update_readme(semua)

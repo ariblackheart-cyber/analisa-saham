@@ -19,7 +19,34 @@ Setiap laporan (`reports/<KODE>/latest.md`) berisi:
 5. **Bollinger Bands (20,2)**: posisi harga di dalam pita dan deteksi squeeze.
 6. **MACD (12,26,9) dan RSI (14)**.
 7. **Support & resistance** 20 hari.
-8. **Skor**: tiap sinyal bernilai +1 (bullish) atau −1 (bearish), lalu dijumlahkan menjadi kesimpulan.
+8. **Fundamental**: PER, PBV, ROE, DER, margin laba, pertumbuhan pendapatan dan laba (YoY), serta laba rugi 5 kuartal terakhir.
+
+Tabel ringkasan di atas diurutkan dari nilai teknikal tertinggi.
+
+## Cara penilaian
+
+Setiap aspek teknikal dinilai **0–10**. Nilai dimulai dari 5 (netral), lalu ditambah atau dikurangi poin sesuai kondisi. Semua rincian poinnya ditampilkan di bagian akhir setiap laporan.
+
+| Aspek | Bobot | Yang dinilai |
+|---|---|---|
+| Tren | 25% | Posisi harga terhadap MA5/MA20/MA100, arah MA20 |
+| Volume | 20% | Volume vs rata-rata 20 hari searah kenaikan/penurunan harga, volume hijau vs merah 5 hari |
+| Stochastic | 20% | Stochastic dan Stoch RSI: posisi dan persilangan K–D, zona oversold/overbought |
+| Momentum | 20% | MACD vs sinyal, MACD vs nol, arah histogram, zona RSI |
+| Candle | 15% | Warna dan ukuran badan, panjang sumbu, pola candle |
+
+**Keputusan teknikal** diambil dari nilai total:
+
+| Keputusan | Aturan |
+|---|---|
+| 🟢 BELI | Total ≥ 7 dan Tren ≥ 5 |
+| 🟡 PANTAU | Total 5,5–7 (atau ≥ 7 tetapi tren masih turun) |
+| ⚪ TUNGGU | Total 4–5,5 |
+| 🔴 HINDARI | Total < 4 |
+
+Laporan juga menampilkan level harga otomatis: support, resistance, batas rugi (di bawah support atau −5%), target, dan rasio untung:rugi.
+
+**Nilai fundamental** (0–10) dihitung terpisah dan tidak memengaruhi keputusan teknikal. Fundamental menilai kualitas perusahaan untuk jangka panjang, sedangkan teknikal menilai waktu masuk dan keluar dalam jangka pendek.
 
 Pengaturan indikator disamakan dengan default Stockbit, jadi angkanya bisa dibandingkan langsung dengan aplikasi. Selisih kecil tetap mungkin karena sumber data berbeda.
 
@@ -44,6 +71,8 @@ python analisa.py RAJA --csv data/RAJA.csv   # dari file CSV (Date,Open,High,Low
 analisa.py      program utama: ambil data, analisa, tulis laporan dan grafik
 indikator.py    rumus MA, Bollinger, MACD, RSI, Stochastic, Stoch RSI
 candle.py       deteksi pola candlestick
+skor.py         penilaian 0–10 dan keputusan
+fundamental.py  data laporan keuangan dan nilai fundamental
 saham.txt       daftar saham
 reports/        laporan harian per saham
 charts/         grafik harian per saham
@@ -53,4 +82,5 @@ charts/         grafik harian per saham
 
 - Data Yahoo Finance gratis tetapi tidak resmi, dan bisa terlambat atau sesekali kosong.
 - Jadwal otomatis berjalan Senin–Jumat pukul 17:15 WIB. Pada hari libur bursa, laporan hari sebelumnya akan ditimpa dengan isi yang sama.
-- Laporan ini dibuat dari aturan teknikal sederhana dan **bukan rekomendasi beli atau jual**.
+- Data fundamental Yahoo Finance untuk saham kecil sering tidak lengkap. Bagian yang kosong tidak ikut dinilai.
+- Keputusan BELI/PANTAU/TUNGGU/HINDARI berasal dari aturan mekanis di `skor.py`, bukan saran dari analis. Aturan ini tidak mengetahui berita, aksi korporasi, atau kondisi pasar. Ubah bobot dan batasnya sesuai gaya trading kamu, dan selalu gunakan batas rugi.
