@@ -1,0 +1,44 @@
+name: Analisa harian
+
+on:
+  schedule:
+    # Senin–Jumat 10:15 UTC = 17:15 WIB / 18:15 WITA, setelah bursa tutup (16:00 WIB)
+    - cron: "15 10 * * 1-5"
+  workflow_dispatch:
+    inputs:
+      kode:
+        description: "Kode saham (pisahkan spasi). Kosongkan untuk semua di saham.txt"
+        required: false
+        default: ""
+
+permissions:
+  contents: write
+
+jobs:
+  analisa:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install
+        run: pip install -r requirements.txt
+
+      - name: Jalankan analisa
+        run: python analisa.py ${{ github.event.inputs.kode }}
+
+      - name: Simpan hasil ke repo
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add reports charts README.md
+          if git diff --cached --quiet; then
+            echo "Tidak ada perubahan."
+          else
+            git commit -m "Analisa harian $(date -u +%Y-%m-%d)"
+            git push
+          fi

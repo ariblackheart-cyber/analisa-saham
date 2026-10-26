@@ -1,0 +1,2 @@
+# Daftar kode saham BEI yang dianalisa setiap hari (tanpa .JK), satu per baris.
+RAJA
