@@ -82,17 +82,17 @@ Fee default: beli 0,15%, jual 0,25%. Ubah di `portofolio.py` sesuai sekuritas ka
 
 ## Database Supabase (opsional)
 
-Semua data bisa disimpan di satu database Supabase. Program tetap berjalan tanpa Supabase, karena saat itu ia memakai `saham.txt` dan `transaksi.csv`.
+Semua data bisa disimpan di satu database Supabase. Semua tabel memakai awalan `saham_`, sehingga bisa berbagi project dengan aplikasi lain. Program tetap berjalan tanpa Supabase, karena saat itu ia memakai `saham.txt` dan `transaksi.csv`.
 
 | Tabel / view | Isi |
 |---|---|
-| `watchlist` | Daftar saham yang dianalisa (kolom `aktif` untuk menonaktifkan tanpa menghapus) |
-| `transaksi` | Catatan jual beli. Isi lewat Table Editor Supabase, bisa dari HP |
-| `harga_harian` | Harga OHLCV harian |
-| `analisa_harian` | Nilai tiap aspek, keputusan, indikator, level harga, dan rincian poin, per saham per hari |
-| `fundamental` | PER, PBV, ROE, DER, pertumbuhan, nilai fundamental, laba rugi per kuartal |
-| `analisa_terbaru` (view) | Analisa terakhir tiap saham |
-| `posisi` (view) | Lot, harga rata-rata, modal, untung/rugi, dan keputusan hari ini untuk saham yang dipegang |
+| `saham_watchlist` | Daftar saham yang dianalisa (kolom `aktif` untuk menonaktifkan tanpa menghapus) |
+| `saham_transaksi` | Catatan jual beli. Isi lewat Table Editor Supabase, bisa dari HP |
+| `saham_harga_harian` | Harga OHLCV harian |
+| `saham_analisa_harian` | Nilai tiap aspek, keputusan, indikator, level harga, dan rincian poin, per saham per hari |
+| `saham_fundamental` | PER, PBV, ROE, DER, pertumbuhan, nilai fundamental, laba rugi per kuartal |
+| `saham_analisa_terbaru` (view) | Analisa terakhir tiap saham |
+| `saham_posisi` (view) | Lot, harga rata-rata, modal, untung/rugi, dan keputusan hari ini untuk saham yang dipegang |
 
 **Cara memasang:**
 

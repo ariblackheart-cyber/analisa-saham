@@ -85,11 +85,11 @@ class Supabase:
 
     # ------------------------------------------------------------ baca
     def watchlist(self) -> list[str]:
-        return [r["kode"] for r in self.ambil("watchlist", {"aktif": "eq.true", "select": "kode",
+        return [r["kode"] for r in self.ambil("saham_watchlist", {"aktif": "eq.true", "select": "kode",
                                                              "order": "kode"})]
 
     def transaksi(self) -> pd.DataFrame:
-        rows = self.ambil("transaksi", {"select": "tanggal,kode,aksi,lot,harga", "order": "tanggal,id"})
+        rows = self.ambil("saham_transaksi", {"select": "tanggal,kode,aksi,lot,harga", "order": "tanggal,id"})
         df = pd.DataFrame(rows, columns=["tanggal", "kode", "aksi", "lot", "harga"])
         if not df.empty:
             df["tanggal"] = pd.to_datetime(df["tanggal"])
@@ -101,7 +101,7 @@ class Supabase:
     def simpan_harga(self, kode, df: pd.DataFrame):
         rows = [dict(kode=kode, tanggal=idx, open=r.Open, high=r.High, low=r.Low, close=r.Close,
                      volume=int(r.Volume)) for idx, r in zip(df.index, df.itertuples())]
-        self.upsert("harga_harian", rows, "kode,tanggal")
+        self.upsert("saham_harga_harian", rows, "kode,tanggal")
 
     def simpan_analisa(self, h: dict):
         t, y, n = h["t"], h["y"], h["nilai"]
@@ -120,7 +120,7 @@ class Supabase:
             target1=r["target1"], target2=r["target2"],
             rincian={k: [{"poin": p, "alasan": s} for p, s in v[1]] for k, v in a.items()},
         )
-        self.upsert("analisa_harian", [row], "kode,tanggal")
+        self.upsert("saham_analisa_harian", [row], "kode,tanggal")
 
     def simpan_fundamental(self, h: dict):
         f = h.get("fund")
@@ -130,7 +130,7 @@ class Supabase:
                    roe=f.get("ROE"), der=f.get("DER"), npm=f.get("NPM"),
                    growth_pendapatan=f.get("growth_rev"), growth_laba=f.get("growth_laba"),
                    market_cap=f.get("MCAP"), nilai=h.get("fund_nilai"), kuartal=f.get("kuartal"))
-        self.upsert("fundamental", [row], "kode,tanggal")
+        self.upsert("saham_fundamental", [row], "kode,tanggal")
 
 
 # ---------------------------------------------------------------- CLI
@@ -140,17 +140,17 @@ def main():
     db = Supabase()
     cmd = sys.argv[1] if len(sys.argv) > 1 else "cek"
     if cmd == "cek":
-        for t in ("watchlist", "transaksi", "harga_harian", "analisa_harian", "fundamental"):
+        for t in ("saham_watchlist", "saham_transaksi", "saham_harga_harian", "saham_analisa_harian", "saham_fundamental"):
             print(f"{t:15} {len(db.ambil(t, {'select': '*'}))} baris")
     elif cmd == "impor-transaksi":
         import portofolio
         df = portofolio.baca(ROOT / "transaksi.csv")
-        db.insert("transaksi", df[["tanggal", "kode", "aksi", "lot", "harga"]].to_dict("records"))
+        db.insert("saham_transaksi", df[["tanggal", "kode", "aksi", "lot", "harga"]].to_dict("records"))
         print(f"{len(df)} transaksi disalin. Setelah ini, catat transaksi baru langsung di Supabase.")
     elif cmd == "impor-watchlist":
         kode = [s.strip().upper() for s in (ROOT / "saham.txt").read_text().splitlines()
                 if s.strip() and not s.startswith("#")]
-        db.upsert("watchlist", [{"kode": k} for k in kode], "kode")
+        db.upsert("saham_watchlist", [{"kode": k} for k in kode], "kode")
         print(f"{len(kode)} kode disalin.")
     else:
         sys.exit(__doc__)
