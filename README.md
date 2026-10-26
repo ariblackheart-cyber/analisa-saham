@@ -8,6 +8,12 @@ Analisa teknikal otomatis untuk saham Bursa Efek Indonesia. Setiap hari bursa, G
 _Belum ada data. Jalankan workflow **Analisa harian** sekali dari tab Actions._
 <!-- RINGKASAN:END -->
 
+## Portofolio saya
+
+<!-- PORTOFOLIO:START -->
+_Belum ada posisi. Isi `transaksi.csv`._
+<!-- PORTOFOLIO:END -->
+
 ## Isi laporan
 
 Setiap laporan (`reports/<KODE>/latest.md`) berisi:
@@ -50,6 +56,30 @@ Laporan juga menampilkan level harga otomatis: support, resistance, batas rugi (
 
 Pengaturan indikator disamakan dengan default Stockbit, jadi angkanya bisa dibandingkan langsung dengan aplikasi. Selisih kecil tetap mungkin karena sumber data berbeda.
 
+## Catat jual beli dan average down
+
+Catat setiap transaksi di `transaksi.csv` (1 lot = 100 lembar):
+
+```csv
+tanggal,kode,aksi,lot,harga
+2026-10-01,RAJA,beli,10,520
+2026-10-15,RAJA,beli,10,480
+2026-10-20,RAJA,jual,5,500
+```
+
+Saham yang sedang dipegang otomatis ikut dianalisa. Untuk setiap posisi, laporan menampilkan:
+
+- Lot, harga rata-rata, modal, nilai pasar, serta untung/rugi kotor dan bersih setelah fee jual.
+- Berapa persen harga perlu naik untuk kembali impas.
+- **Tabel simulasi average down**: beli lagi 50%, 100%, atau 200% dari lot yang dipegang, di harga sekarang, di support, atau di batas rugi. Hasilnya adalah rata-rata baru, dana yang dibutuhkan, dan kenaikan yang diperlukan untuk impas.
+- Jumlah lot yang perlu dibeli supaya rata-rata turun ke titik tengah.
+- Peringatan jika keputusan teknikal hari itu TUNGGU atau HINDARI, karena average down saat tren turun menambah risiko.
+- Riwayat transaksi dan untung/rugi yang sudah terealisasi.
+
+Fee default: beli 0,15%, jual 0,25%. Ubah di `portofolio.py` sesuai sekuritas kamu.
+
+> ⚠️ Kalau repo ini **public**, isi `transaksi.csv` dan portofolio kamu bisa dilihat siapa saja. Jadikan repo **private** jika tidak ingin itu terjadi. GitHub Actions tetap gratis untuk pemakaian sebesar ini.
+
 ## Cara pakai
 
 **Menambah saham:** edit `saham.txt`, tulis satu kode per baris (tanpa `.JK`).
@@ -72,6 +102,8 @@ analisa.py      program utama: ambil data, analisa, tulis laporan dan grafik
 indikator.py    rumus MA, Bollinger, MACD, RSI, Stochastic, Stoch RSI
 candle.py       deteksi pola candlestick
 skor.py         penilaian 0–10 dan keputusan
+portofolio.py   harga rata-rata, untung/rugi, simulasi average down
+transaksi.csv   catatan jual beli kamu
 fundamental.py  data laporan keuangan dan nilai fundamental
 saham.txt       daftar saham
 reports/        laporan harian per saham

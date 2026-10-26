@@ -1,0 +1,4 @@
+# Catatan jual beli. Satu baris per transaksi. 1 lot = 100 lembar. aksi: beli / jual
+# Contoh:
+# 2026-10-01,RAJA,beli,10,520
+tanggal,kode,aksi,lot,harga

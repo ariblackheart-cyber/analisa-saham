@@ -26,6 +26,7 @@ import pandas as pd
 from candle import baca_candle
 from skor import BOBOT, hitung as hitung_skor
 import fundamental as fund
+import portofolio as porto
 from indikator import hitung_semua
 
 ROOT = Path(__file__).parent
@@ -281,6 +282,61 @@ def blok_nilai(h: dict) -> list[str]:
     return L
 
 
+def blok_posisi(h: dict) -> list[str]:
+    p = h.get("posisi")
+    if not p:
+        return []
+    harga = float(h["t"]["Close"])
+    L = ["## Posisi kamu & simulasi average down", ""]
+    if p["lot"] > 0:
+        v = porto.nilai_sekarang(p, harga)
+        tanda = "🟢" if v["kotor"] >= 0 else "🔴"
+        L += ["| Lot | Harga rata-rata | Harga sekarang | Modal | Nilai pasar | Untung/rugi | Bersih setelah fee jual |",
+              "|---|---|---|---|---|---|---|",
+              f"| {p['lot']} | {num(p['avg'], 1)} | {rp(harga)} | {rp(v['modal'])} | {rp(v['pasar'])} | "
+              f"{tanda} {rp(v['kotor'])} ({v['persen']:+.2f}%) | {rp(v['bersih'])} |", ""]
+        if harga < p["avg"]:
+            L.append(f"Harga perlu naik **{(p['avg'] / harga - 1) * 100:.1f}%** untuk kembali ke harga rata-rata "
+                     f"(belum termasuk fee).")
+            L.append("")
+    else:
+        L += ["Saat ini tidak memegang saham ini (semua sudah dijual).", ""]
+    if p["realized"]:
+        L += [f"Untung/rugi yang sudah terealisasi dari penjualan: **{rp(p['realized'])}** (setelah fee jual).", ""]
+
+    if p["lot"] > 0:
+        r = h["nilai"]["rencana"]
+        level = [("Harga sekarang", harga), ("Support 20 hari", float(r["support"])),
+                 ("Batas rugi", float(r["stop"]))]
+        sim = porto.simulasi_avg_down(p, level)
+        if sim:
+            L += ["**Simulasi beli lagi (average down):**", "",
+                  "| Beli di | Harga | Tambah lot | Dana dibutuhkan | Total lot | Rata-rata baru | Rata-rata turun | Naik perlu untuk impas |",
+                  "|---|---|---|---|---|---|---|---|"]
+            for x in sim:
+                L.append(f"| {x['level']} | {rp(x['harga'])} | {x['tambah_lot']} | {rp(x['dana'])} | {x['lot_total']} | "
+                         f"{num(x['avg_baru'], 1)} | {x['turun']:+.1f}% | {x['naik_perlu']:+.1f}% |")
+            L.append("")
+            if harga < p["avg"]:
+                target = (p["avg"] + harga) / 2
+                n = porto.lot_untuk_target_avg(p, harga, target)
+                if n:
+                    L += [f"Supaya rata-rata turun ke tengah-tengah ({num(target, 0)}), perlu beli **{n} lot** "
+                          f"di harga {rp(harga)} (dana ±{rp(n * 100 * harga * (1 + porto.FEE_BELI))}).", ""]
+            if h["nilai"]["label"] in ("HINDARI", "TUNGGU"):
+                L += ["⚠️ Keputusan teknikal hari ini **" + h["nilai"]["label"] + "**. Average down saat tren masih "
+                      "turun menambah risiko. Biasanya lebih aman menunggu tanda pembalikan (misalnya harga kembali "
+                      "di atas MA20) daripada menambah di tengah penurunan.", ""]
+
+    L += ["<details><summary>Riwayat transaksi</summary>", "",
+          "| Tanggal | Aksi | Lot | Harga | Sisa lot | Rata-rata | Untung/rugi jual |", "|---|---|---|---|---|---|---|"]
+    for x in p["riwayat"]:
+        L.append(f"| {x['tanggal']} | {x['aksi']} | {x['lot']} | {rp(x['harga'])} | {x['lot_sisa']} | "
+                 f"{num(x['avg'], 1)} | {'-' if x['pl'] is None else rp(x['pl'])} |")
+    L += ["", "</details>", ""]
+    return L
+
+
 def blok_fundamental(h: dict) -> list[str]:
     f = h.get("fund")
     if not f:
@@ -318,7 +374,7 @@ def laporan(h: dict, chart: str) -> str:
          f"|---|---|---|---|---|---|",
          f"| {rp(t['Open'])} | {rp(t['High'])} | {rp(t['Low'])} | **{rp(t['Close'])}** | "
          f"{chg:+.0f} ({pct:+.2f}%) | {rp(t['Volume'])} |", "",
-         ] + blok_nilai(h) + ["## 1. Candlestick", "", h["candle_dasar"], ""]
+         ] + blok_nilai(h) + blok_posisi(h) + ["## 1. Candlestick", "", h["candle_dasar"], ""]
     if h["pola"]:
         for nama, arah, ket in h["pola"]:
             tanda = "🟢" if arah > 0 else "🔴" if arah < 0 else "⚪"
@@ -356,9 +412,29 @@ def update_readme(semua: list[dict]):
                     f"{pct:+.2f}% | " + " | ".join(f"{v[0]:.1f}" for v in h["nilai"]["aspek"].values())
                     + f" | **{h['nilai']['total']:.1f}** | {IKON[h['nilai']['label']]} {h['nilai']['label']} | "
                     + f"{num(h.get('fund_nilai'))} {fund.label(h.get('fund_nilai')) if h.get('fund') else ''} |")
+    port = ["| Saham | Lot | Rata-rata | Harga | Modal | Untung/rugi | Keputusan hari ini |",
+            "|---|---|---|---|---|---|---|"]
+    tot_modal = tot_pl = 0.0
+    for h in semua:
+        p = h.get("posisi")
+        if not p or p["lot"] == 0:
+            continue
+        v = porto.nilai_sekarang(p, float(h["t"]["Close"]))
+        tot_modal += v["modal"]
+        tot_pl += v["kotor"]
+        port.append(f"| [{h['kode']}](reports/{h['kode']}/latest.md) | {p['lot']} | {num(p['avg'], 1)} | "
+                    f"{rp(h['t']['Close'])} | {rp(v['modal'])} | {'🟢' if v['kotor'] >= 0 else '🔴'} "
+                    f"{rp(v['kotor'])} ({v['persen']:+.2f}%) | {IKON[h['nilai']['label']]} {h['nilai']['label']} |")
+    if len(port) > 2:
+        port.append(f"| **Total** | | | | **{rp(tot_modal)}** | **{rp(tot_pl)} "
+                    f"({(tot_pl / tot_modal * 100 if tot_modal else 0):+.2f}%)** | |")
+    else:
+        port = ["_Belum ada posisi. Isi `transaksi.csv`._"]
+    blok_p = "<!-- PORTOFOLIO:START -->\n" + "\n".join(port) + "\n<!-- PORTOFOLIO:END -->"
     blok = "<!-- RINGKASAN:START -->\n" + "\n".join(rows) + "\n<!-- RINGKASAN:END -->"
     teks = readme.read_text(encoding="utf-8")
     teks = re.sub(r"<!-- RINGKASAN:START -->.*?<!-- RINGKASAN:END -->", blok, teks, flags=re.S)
+    teks = re.sub(r"<!-- PORTOFOLIO:START -->.*?<!-- PORTOFOLIO:END -->", blok_p, teks, flags=re.S)
     readme.write_text(teks, encoding="utf-8")
 
 
@@ -372,6 +448,12 @@ def main():
     kode_list = [k.upper() for k in a.kode] or [
         s.strip().upper() for s in (ROOT / "saham.txt").read_text().splitlines()
         if s.strip() and not s.startswith("#")]
+    trx = porto.baca(ROOT / "transaksi.csv")
+    if not a.kode:  # saham yang sedang dipegang ikut dianalisa
+        for k in trx["kode"].unique():
+            p = porto.posisi(trx, k)
+            if p and p["lot"] > 0 and k not in kode_list:
+                kode_list.append(k)
 
     semua, gagal = [], []
     for kode in kode_list:
@@ -387,6 +469,7 @@ def main():
                 except Exception as e:
                     print(f"[{kode}] data fundamental gagal: {e}", file=sys.stderr)
             h["fund_nilai"], h["fund_rincian"] = fund.nilai(h["fund"]) if h["fund"] else (None, [])
+            h["posisi"] = porto.posisi(trx, kode)
         except Exception as e:  # lanjut ke saham lain
             gagal.append(kode)
             print(f"[{kode}] gagal: {e}", file=sys.stderr)
