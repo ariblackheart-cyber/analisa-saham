@@ -107,7 +107,7 @@ Semua data bisa disimpan di satu database Supabase. Semua tabel memakai awalan `
    - `SUPABASE_URL`
    - `SUPABASE_SERVICE_KEY` (isi dengan Secret key)
 5. Untuk dashboard: jalankan `supabase/002_akses_dashboard.sql` di SQL Editor, lalu daftarkan akunmu:
-   `insert into saham_pemilik (user_id) select id from auth.users where email = 'EMAIL_KAMU';`
+   (ganti `EMAIL_KAMU` di baris terakhir file dengan email akun Supabase kamu).
 6. (Opsional) Salin data lama: `python db.py impor-watchlist` dan `python db.py impor-transaksi`.
 
 Setelah terpasang, watchlist dan transaksi dibaca dari Supabase. Laporan Markdown dan grafik tetap disimpan di repo.
