@@ -5,7 +5,9 @@ Analisa teknikal otomatis untuk saham Bursa Efek Indonesia. Setiap hari bursa, G
 ## Ringkasan terbaru
 
 <!-- RINGKASAN:START -->
-_Belum ada data. Jalankan workflow **Analisa harian** sekali dari tab Actions._
+| Saham | Tanggal | Close | Perubahan | Tren | Volume | Stoch | Momentum | Candle | Total | Keputusan | Fundamental |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| [RAJA](reports/RAJA/latest.md) | 2026-10-26 | 472 | -5.60% | 0.0 | 4.4 | 6.5 | 4.0 | 1.6 | **3.2** | 🔴 HINDARI | 8.7 Kuat |
 <!-- RINGKASAN:END -->
 
 ## Portofolio saya
