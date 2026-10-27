@@ -39,3 +39,6 @@ language sql stable set search_path = public as $$
 $$;
 revoke execute on function saham_cari_berita(text, int) from public, anon;
 grant execute on function saham_cari_berita(text, int) to authenticated, service_role;
+
+-- Nama perusahaan (diisi otomatis oleh analisa.py) ikut dipakai untuk mencocokkan berita.
+alter table saham_watchlist add column if not exists nama text;

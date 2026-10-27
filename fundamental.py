@@ -25,6 +25,16 @@ def _baris(df, nama_list):
     return None
 
 
+def nama_pendek(nama: str | None) -> str | None:
+    """'PT Bank Rakyat Indonesia (Persero) Tbk' -> 'Bank Rakyat Indonesia' (untuk mencari berita)."""
+    import re
+    if not nama:
+        return None
+    n = re.sub(r"\(Persero\)|\bTbk\.?|^PT\.?\s+|\s+PT\.?$|,", " ", nama, flags=re.I)
+    n = re.sub(r"\s+", " ", n).strip()
+    return n or None
+
+
 def _kurs(yf, dari: str, ke: str) -> float | None:
     """Kurs terakhir, misalnya USD→IDR dari ticker USDIDR=X."""
     try:
@@ -52,6 +62,7 @@ def ambil(kode: str) -> dict:
     if mu_lapor != mu_harga:
         kurs = _kurs(yf, mu_lapor, mu_harga)
     data["mata_uang"] = mu_lapor
+    data["nama"] = nama_pendek(info.get("longName") or info.get("shortName"))
     data["kurs"] = kurs
     harga = info.get("currentPrice") or info.get("regularMarketPrice") or info.get("previousClose")
 

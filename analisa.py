@@ -527,6 +527,8 @@ def main():
                 sb.simpan_harga(kode, df)
                 sb.simpan_analisa(h)
                 sb.simpan_fundamental(h)
+                if h.get("fund") and h["fund"].get("nama"):   # nama perusahaan untuk pencarian berita
+                    sb.upsert("saham_watchlist", [{"kode": kode, "nama": h["fund"]["nama"]}], "kode")
             except Exception as e:
                 gagal.append(kode)
                 print(f"[{kode}] gagal menyimpan ke Supabase: {e}", file=sys.stderr)
