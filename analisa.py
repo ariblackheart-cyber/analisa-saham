@@ -351,12 +351,23 @@ def blok_fundamental(h: dict) -> list[str]:
          "|---|---|---|---|---|---|---|---|",
          f"| {num(f.get('PER'))} | {num(f.get('PBV'), 2)} | {pct(f.get('ROE'))} | {der} | {pct(f.get('NPM'))} | "
          f"{pct(f.get('growth_rev'))} | {pct(f.get('growth_laba'))} | "
-         f"{'-' if not fund._ok(f.get('MCAP')) else rp(f['MCAP'] / 1e9) + ' miliar'} |", ""]
+         f"{'-' if not fund._ok(f.get('MCAP')) else num(f['MCAP'] / 1e12, 2) + ' T'} |", ""]
+    mu = f.get("mata_uang", "IDR")
+    if mu != "IDR":
+        kurs = f.get("kurs")
+        L += [f"Laporan keuangan emiten ini disajikan dalam **{mu}**. "
+              + (f"PBV dihitung ulang dengan kurs {mu}/IDR {rp(kurs)}." if kurs else
+                 "Kurs tidak tersedia, sehingga PBV tidak dihitung."), ""]
     if f.get("kuartal"):
-        L += ["Laporan laba rugi per kuartal (miliar Rp):", "", "| Periode | Pendapatan | Laba bersih |", "|---|---|---|"]
+        if mu == "IDR":
+            bagi, satuan = 1e9, "miliar Rp"
+        else:
+            bagi, satuan = 1e6, f"juta {mu}"
+        L += [f"Laporan laba rugi per kuartal ({satuan}):", "", "| Periode | Pendapatan | Laba bersih |", "|---|---|---|"]
         for k in f["kuartal"]:
-            pend = "-" if not fund._ok(k["pendapatan"]) else rp(k["pendapatan"] / 1e9)
-            L.append(f"| {k['periode']} | {pend} | {num(k['laba'] / 1e9, 1)} |")
+            pend = "-" if not fund._ok(k["pendapatan"]) else num(k["pendapatan"] / bagi, 1)
+            laba = "-" if not fund._ok(k["laba"]) else num(k["laba"] / bagi, 1)
+            L.append(f"| {k['periode']} | {pend} | {laba} |")
         L.append("")
     if h["fund_rincian"]:
         L += ["| Kondisi | Poin |", "|---|---|"] + [f"| {a} | {p:+.2f} |" for p, a in h["fund_rincian"]]

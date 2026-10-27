@@ -25,6 +25,17 @@ def _baris(df, nama_list):
     return None
 
 
+def _kurs(yf, dari: str, ke: str) -> float | None:
+    """Kurs terakhir, misalnya USD→IDR dari ticker USDIDR=X."""
+    try:
+        h = yf.Ticker(f"{dari}{ke}=X").history(period="5d")
+        if len(h):
+            return float(h["Close"].dropna().iloc[-1])
+    except Exception:
+        pass
+    return None
+
+
 def ambil(kode: str) -> dict:
     import yfinance as yf
     tk = yf.Ticker(f"{kode}.JK")
@@ -33,8 +44,29 @@ def ambil(kode: str) -> dict:
         info = tk.info or {}
     except Exception:
         info = {}
+    # Beberapa emiten BEI (misalnya RAJA) melapor dalam USD, sedangkan harganya dalam IDR.
+    # Yahoo tidak selalu mengonversi, jadi PBV/PER dihitung ulang dengan kurs.
+    mu_harga = (info.get("currency") or "IDR").upper()
+    mu_lapor = (info.get("financialCurrency") or mu_harga).upper()
+    kurs = 1.0
+    if mu_lapor != mu_harga:
+        kurs = _kurs(yf, mu_lapor, mu_harga)
+    data["mata_uang"] = mu_lapor
+    data["kurs"] = kurs
+    harga = info.get("currentPrice") or info.get("regularMarketPrice") or info.get("previousClose")
+
     data["PER"] = info.get("trailingPE")
+    eps = info.get("trailingEps")
+    if _ok(data["PER"]) and data["PER"] > 1000 and harga and eps and kurs:
+        data["PER"] = harga / (eps * kurs)            # EPS ternyata belum dikonversi
     data["PBV"] = info.get("priceToBook")
+    bvps = info.get("bookValue")
+    if harga and bvps and kurs and mu_lapor != mu_harga:
+        data["PBV"] = harga / (bvps * kurs)
+    if _ok(data["PBV"]) and data["PBV"] > 200:        # masih tidak masuk akal: buang
+        data["PBV"] = None
+    if _ok(data["PER"]) and data["PER"] > 1000:
+        data["PER"] = None
     data["ROE"] = info.get("returnOnEquity")           # desimal, 0.15 = 15%
     data["NPM"] = info.get("profitMargins")            # margin laba bersih
     data["DER"] = info.get("debtToEquity")             # persen, 80 = 0,8x
