@@ -360,6 +360,13 @@ async function muatSemua() {
   const gagal = [a, t, w].find(r => r.error);
   STATE.analisa = (a.data || []).sort((x, y) => y.nilai_total - x.nilai_total);
   STATE.trx = t.data || []; STATE.watch = w.data || [];
+  // Harga cadangan dari pemindaian Rekomendasi untuk saham dipegang yang belum punya analisa lengkap.
+  const tanpa = hitungPosisi(STATE.trx).filter(p => p.lembar > 0 && !STATE.analisa.some(a => a.kode === p.kode)).map(p => p.kode);
+  STATE.hargaCadangan = {};
+  if (tanpa.length) {
+    const c = await sb.from("saham_screener").select("kode,tanggal,close").in("kode", tanpa).order("tanggal", { ascending: false });
+    for (const r of c.data || []) STATE.hargaCadangan[r.kode] ||= r;
+  }
   STATE.aksesKosong = !gagal && !STATE.analisa.length && !STATE.watch.length;
   const tgl = STATE.analisa.map(r => r.tanggal).sort().pop();
   $("#tgl-data").textContent = tgl ? "Data penutupan " + tglID(tgl) : "";
@@ -754,17 +761,20 @@ function panelFundamental(f) {
 
 // ---------------------------------------------------------------- portofolio
 function tabelPosisi(list) {
-  let tm = 0, tp = 0;
+  let tm = 0, tp = 0, adaTanpaHarga = false;
   const rows = list.map(p => {
-    const a = STATE.analisa.find(x => x.kode === p.kode), harga = a ? +a.close : null;
+    const a = STATE.analisa.find(x => x.kode === p.kode), cad = (STATE.hargaCadangan || {})[p.kode];
+    const harga = a ? +a.close : cad ? +cad.close : null;
     const modal = p.avg * p.lembar, pl = harga == null ? null : (harga - p.avg) * p.lembar;
-    tm += modal; tp += pl || 0;
+    if (pl != null) { tm += modal; tp += pl; } else adaTanpaHarga = true;
     return `<tr><td><b>${esc(p.kode)}</b>${a ? `<div class="small v-${esc(a.keputusan)}">${esc(a.keputusan)}</div>` : ""}</td>
-      <td class="r">${fmt(p.lembar / LOT)}</td><td class="r">${fmt(p.avg, 1)}</td><td class="r">${fmt(harga)}</td>
+      <td class="r">${fmt(p.lembar / LOT)}</td><td class="r">${fmt(p.avg, 1)}</td><td class="r">${fmt(harga)}${!a && cad ? `<div class="small muted">sementara</div>` : ""}</td>
       <td class="r">${fmt(modal)}</td><td class="r ${kelas(pl)}">${fmt(pl)}<div class="small">${pct(modal ? pl / modal * 100 : null)}</div></td></tr>`;
   }).join("");
   const total = list.length > 1 ? `<tr><td><b>Total</b></td><td></td><td></td><td></td><td class="r"><b>${fmt(tm)}</b></td><td class="r ${kelas(tp)}"><b>${fmt(tp)}</b><div class="small">${pct(tm ? tp / tm * 100 : null)}</div></td></tr>` : "";
-  return `<div class="scroll"><table><thead><tr><th>Saham</th><th class="r">Lot</th><th class="r">Rata-rata</th><th class="r">Harga</th><th class="r">Modal</th><th class="r">Untung/rugi</th></tr></thead><tbody>${rows}${total}</tbody></table></div>`;
+  const catatan = adaTanpaHarga ? `<p class="small muted" style="margin:6px 0 0">Total hanya menghitung saham yang harganya sudah tersedia.</p>`
+    : list.some(p => !STATE.analisa.some(x => x.kode === p.kode)) ? `<p class="small muted" style="margin:6px 0 0">Harga "sementara" diambil dari pemindaian Rekomendasi. Analisa lengkap muncul setelah run harian berikutnya.</p>` : "";
+  return `<div class="scroll"><table><thead><tr><th>Saham</th><th class="r">Lot</th><th class="r">Rata-rata</th><th class="r">Harga</th><th class="r">Modal</th><th class="r">Untung/rugi</th></tr></thead><tbody>${rows}${total}</tbody></table></div>${catatan}`;
 }
 
 // Proyeksi jual: (opsional) beli tambahan dulu, lalu jual sebagian/semua. Fee beli & jual ikut dihitung.
