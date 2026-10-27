@@ -92,10 +92,13 @@ def main():
             hasil = baca_rss(r.text, url)
             for h in hasil:
                 semua[h["link"]] = h
-            print(f"{url}: {len(hasil)} berita")
+            print(f"::notice title=Feed OK::{url}: HTTP {r.status_code}, {len(r.content)} byte, {len(hasil)} berita")
+        except requests.HTTPError as e:
+            gagal.append(url)
+            print(f"::warning title=Feed gagal::{url}: HTTP {e.response.status_code}")
         except Exception as e:
             gagal.append(url)
-            print(f"{url}: gagal ({e})", file=sys.stderr)
+            print(f"::warning title=Feed gagal::{url}: {type(e).__name__}: {str(e)[:150]}")
     if not db.aktif():
         sys.exit("SUPABASE_URL / SUPABASE_SERVICE_KEY belum diisi.")
     sb = db.Supabase()
