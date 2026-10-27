@@ -9,13 +9,26 @@ Analisa teknikal otomatis untuk saham Bursa Efek Indonesia. Setiap hari bursa, G
 <!-- RINGKASAN:START -->
 | Saham | Tanggal | Close | Perubahan | Tren | Volume | Stoch | Momentum | Candle | Total | Keputusan | Fundamental |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| [RAJA](reports/RAJA/latest.md) | 2026-10-26 | 472 | -5.60% | 0.0 | 4.4 | 6.5 | 4.0 | 1.6 | **3.2** | 🔴 HINDARI | 9.4 Kuat |
+| [RAJA](reports/RAJA/latest.md) | 2026-10-27 | 474 | +0.42% | 0.0 | 5.9 | 6.5 | 4.0 | 4.6 | **4.0** | 🔴 HINDARI | 9.4 Kuat |
 <!-- RINGKASAN:END -->
 
 ## Rekomendasi teknikal
 
 <!-- REKOMENDASI:START -->
-_Muncul setelah pemindaian harian pertama._
+10 nilai teknikal tertinggi dari 81 saham likuid yang dipindai (2026-10-27). Hasil aturan mekanis, bukan rekomendasi investasi.
+
+| # | Saham | Close | Perubahan | Total | Keputusan | Tren | Volume | Stoch | Momentum | Candle |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 1 | **AALI** | 9.775 | +2.89% | **8.5** | 🟢 BELI | 10.0 | 7.2 | 5.8 | 9.5 | 10.0 |
+| 2 | **AADI** | 11.800 | +2.39% | **8.1** | 🟢 BELI | 10.0 | 7.9 | 6.5 | 9.5 | 5.2 |
+| 3 | **PWON** | 292 | +2.82% | **8.0** | 🟢 BELI | 10.0 | 8.0 | 5.8 | 9.5 | 5.8 |
+| 4 | **CTRA** | 585 | +1.74% | **7.6** | 🟢 BELI | 10.0 | 6.7 | 5.0 | 7.5 | 8.5 |
+| 5 | **UNTR** | 25.750 | +3.00% | **7.4** | 🟢 BELI | 10.0 | 5.9 | 5.0 | 7.5 | 8.4 |
+| 6 | **INTP** | 5.725 | +1.78% | **7.3** | 🟢 BELI | 10.0 | 7.1 | 2.0 | 9.5 | 7.3 |
+| 7 | **AKRA** | 1.460 | +4.29% | **7.1** | 🟢 BELI | 8.0 | 7.8 | 5.8 | 7.5 | 6.0 |
+| 8 | **ADRO** | 2.490 | +1.63% | **7.1** | 🟢 BELI | 8.0 | 6.6 | 5.8 | 7.5 | 7.4 |
+| 9 | **ELSA** | 660 | +3.12% | **7.1** | 🟢 BELI | 8.0 | 6.5 | 5.8 | 7.5 | 7.4 |
+| 10 | **JSMR** | 2.800 | +3.70% | **7.0** | 🟢 BELI | 8.0 | 8.1 | 5.0 | 7.5 | 6.2 |
 <!-- REKOMENDASI:END -->
 
 Setiap hari bursa, semua saham di `universe.txt` (±85 saham likuid) dinilai dengan aturan yang sama. Saham dengan rata-rata transaksi di bawah Rp 5 miliar/hari dilewati. Daftar lengkap dan alasannya ada di tab **Rekomendasi** di dashboard. Ubah daftar saham di `universe.txt` dan batas likuiditas di `screener.py`.
@@ -23,7 +36,7 @@ Setiap hari bursa, semua saham di `universe.txt` (±85 saham likuid) dinilai den
 ## Portofolio saya
 
 <!-- PORTOFOLIO:START -->
-_Belum ada posisi. Isi `transaksi.csv`._
+_Portofolio tidak ditampilkan di repo. Lihat di dashboard (perlu login)._
 <!-- PORTOFOLIO:END -->
 
 ## Isi laporan
