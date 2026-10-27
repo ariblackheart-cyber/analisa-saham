@@ -108,6 +108,13 @@ class Supabase:
                                   headers={"Prefer": "resolution=merge-duplicates,return=minimal"},
                                   timeout=60))
 
+    def hapus(self, tabel, filter_: dict):
+        """Hapus baris yang cocok dengan filter PostgREST, misalnya {"terbit": "lt.2026-01-01"}."""
+        if not filter_:
+            raise ValueError("filter wajib diisi")
+        self._cek(self.s.delete(f"{self.url}/{tabel}", params=filter_,
+                                headers={"Prefer": "return=minimal"}, timeout=60))
+
     def insert(self, tabel, rows):
         rows = [_bersih(r) for r in rows]
         if rows:

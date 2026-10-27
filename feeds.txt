@@ -1,0 +1,5 @@
+# Feed RSS berita pasar modal yang diambil setiap 3 jam. Satu URL per baris; baris # diabaikan.
+# Nama sumber diambil dari judul feed.
+https://www.cnbcindonesia.com/market/rss
+https://www.antaranews.com/rss/ekonomi-bursa.xml
+https://www.idxchannel.com/rss

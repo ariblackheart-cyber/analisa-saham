@@ -1,0 +1,22 @@
+name: Berita
+
+on:
+  schedule:
+    # setiap 3 jam
+    - cron: "20 */3 * * *"
+  workflow_dispatch:
+
+jobs:
+  berita:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install requests pandas
+      - name: Ambil berita
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: python berita.py

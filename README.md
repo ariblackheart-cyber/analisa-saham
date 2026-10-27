@@ -37,6 +37,10 @@ Setiap hari bursa, semua saham di `universe.txt` (±85 saham likuid) dinilai den
 
 Data beli/jual asing tidak tersedia di Yahoo Finance, dan situs BEI menolak akses otomatis dari server. Karena itu datanya diunggah manual: unduh file **Ringkasan Saham** harian dari idx.co.id, lalu unggah di dashboard (tab **Catat**, beberapa file sekaligus boleh). Tab **Rekomendasi** lalu menampilkan net beli asing 1 hari, 1 minggu, dan 1 bulan, bisa diurutkan berdasarkan asing, dan bisa disaring ke saham yang diakumulasi asing (net beli dan net beli di minimal 60% hari).
 
+## Berita
+
+Setiap 3 jam, workflow **Berita** mengambil berita dari feed RSS di `feeds.txt` (CNBC Indonesia Market, Antara Ekonomi Bursa, IDX Channel) dan menyimpannya 30 hari. Di dashboard, berita bisa dicari dengan kata kunci; kode saham yang dipantau otomatis jadi kata kunci, dan kata kunci lain (misalnya nikel atau suku bunga) bisa ditambahkan di tab **Catat**. Halaman detail saham menampilkan berita yang menyebut kode saham itu.
+
 ## Portofolio saya
 
 <!-- PORTOFOLIO:START -->
@@ -123,6 +127,7 @@ Semua data bisa disimpan di satu database Supabase. Semua tabel memakai awalan `
 | `saham_analisa_terbaru` (view) | Analisa terakhir tiap saham |
 | `saham_screener` | Hasil pemindaian harian untuk tab Rekomendasi |
 | `saham_asing` | Foreign buy/sell harian dari file Ringkasan Saham BEI (diunggah lewat dashboard) |
+| `saham_berita`, `saham_kata_kunci` | Berita dari feed RSS dan kata kunci pencarian |
 | `saham_posisi` (view) | Lot, harga rata-rata, modal, untung/rugi, dan keputusan hari ini untuk saham yang dipegang |
 
 **Cara memasang:**
@@ -133,7 +138,7 @@ Semua data bisa disimpan di satu database Supabase. Semua tabel memakai awalan `
 4. Di GitHub, buka **Settings → Secrets and variables → Actions → New repository secret**, lalu tambahkan:
    - `SUPABASE_URL`
    - `SUPABASE_SERVICE_KEY` (isi dengan Secret key)
-5. Untuk dashboard: jalankan `supabase/002_akses_dashboard.sql` lalu `supabase/003_screener.sql` dan `supabase/004_asing.sql` di SQL Editor, lalu daftarkan akunmu:
+5. Untuk dashboard: jalankan `supabase/002_akses_dashboard.sql` lalu `supabase/003_screener.sql` `supabase/004_asing.sql`, dan `supabase/005_berita.sql` di SQL Editor, lalu daftarkan akunmu:
    (ganti `EMAIL_KAMU` di baris terakhir file dengan email akun Supabase kamu).
 6. (Opsional) Salin data lama: `python db.py impor-watchlist` dan `python db.py impor-transaksi`.
 
@@ -170,6 +175,8 @@ saham.txt       daftar saham (jika tidak memakai Supabase)
 db.py           penghubung ke Supabase
 screener.py     pemindai harian untuk tab Rekomendasi
 universe.txt    daftar saham yang dipindai
+berita.py       pengambil berita dari feed RSS
+feeds.txt       daftar feed berita
 supabase/       skema database dan aturan akses dashboard
 docs/           dashboard web (GitHub Pages)
 reports/        laporan harian per saham

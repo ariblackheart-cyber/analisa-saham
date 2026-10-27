@@ -158,6 +158,12 @@ input, select { background: var(--surface-2); border: 1px solid var(--line); bor
 .seg3 { grid-template-columns: 1fr 1.4fr 1fr !important; }
 .seg.kecil label { padding: 7px 6px; font-size: 13px; }
 .seg2 { grid-template-columns: 1fr 1fr; }
+.berita { display: block; padding: 12px 0; border-bottom: 1px solid var(--line); color: inherit; text-decoration: none; }
+.berita:last-child { border-bottom: 0; }
+.berita b { display: block; font-size: 15px; line-height: 1.35; }
+.berita .meta { font-size: 12px; color: var(--muted); margin-top: 4px; }
+.berita .tag { display: inline-block; font-size: 11px; font-weight: 700; color: var(--accent); margin-right: 6px; }
+.chips .hapus { border-color: var(--line); background: var(--surface); }
 .chips { display: flex; gap: 8px; flex-wrap: wrap; }
 .chips button { border: 1px solid var(--line); background: var(--surface-2); border-radius: 999px; padding: 7px 16px; font-weight: 700; cursor: pointer; }
 .chips button[aria-checked="true"] { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
@@ -233,6 +239,14 @@ input, select { background: var(--surface-2); border: 1px solid var(--line); bor
       <div id="hasil-cari"></div>
       <div class="saham-list" id="list-saham"></div>
       <div id="menunggu"></div>
+      <div class="panel" id="panel-berita">
+        <h2>Berita</h2>
+        <form id="f-berita" style="margin-top:10px" onsubmit="return false">
+          <input id="q-berita" type="search" placeholder="Cari berita, misalnya nikel atau BBRI" autocomplete="off">
+        </form>
+        <div class="chips" id="chips-berita" style="margin-top:10px"></div>
+        <div id="list-berita" style="margin-top:6px"></div>
+      </div>
     </section>
 
     <section class="view" id="t-detail" hidden></section>
@@ -311,6 +325,15 @@ input, select { background: var(--surface-2); border: 1px solid var(--line); bor
         </form>
         <div id="list-watch" style="margin-top:12px"></div>
       </div>
+      <div class="panel">
+        <h2>Kata kunci berita</h2>
+        <p class="small muted" style="margin:0 0 10px">Kode saham yang dipantau otomatis jadi kata kunci. Tambahkan topik lain, misalnya IHSG, nikel, atau suku bunga.</p>
+        <form class="f" id="f-kunci">
+          <label>Kata kunci<input name="kata" required maxlength="60" placeholder="nikel"></label>
+          <label style="align-self:end"><button class="btn" type="submit">Tambahkan</button></label>
+        </form>
+        <div class="chips" id="list-kunci" style="margin-top:12px"></div>
+      </div>
     </section>
   </main>
 </div>
@@ -342,6 +365,8 @@ async function mulai() {
   $("#v-login").hidden = true; $("#v-app").hidden = false;
   await muatSemua();
   muatTanggalAsing();
+  await muatKunci();
+  renderBerita();
 }
 function tampilLogin() { $("#v-app").hidden = true; $("#v-login").hidden = false; }
 $("#f-login").addEventListener("submit", async e => {
@@ -675,9 +700,12 @@ async function bukaDetail(kode) {
     ${pos ? `<div class="panel"><h2>Posisi kamu</h2>${tabelPosisi([pos])}${tabelAvgDown(pos, r)}${simulasiJual(pos, r)}</div>` : ""}
 
     ${fund ? panelFundamental(fund) : ""}
+    <div class="panel"><h2>Berita ${esc(kode)}</h2><div id="berita-detail"><p class="small muted">Memuat…</p></div></div>
     <p class="small muted">Keputusan berasal dari aturan teknikal mekanis, bukan rekomendasi. Selalu gunakan batas rugi.</p>`;
   $("#btn-back").onclick = () => buka(STATE.asal || "ringkasan");
   gambarChart(harga);
+  cariBerita(kode, 30).then(rows => { const el = $("#berita-detail");
+    if (el) el.innerHTML = daftarBerita(rows.slice(0, 15), `Belum ada berita 30 hari terakhir yang menyebut ${esc(kode)}.`); });
 }
 
 function sparkline(rows) {
@@ -972,6 +1000,60 @@ $("#f-watch").addEventListener("submit", async e => {
   const { error } = await sb.from("saham_watchlist").upsert({ kode, aktif: true });
   if (error) return alert("Gagal menyimpan: " + error.message);
   e.target.reset(); await muatSemua();
+});
+
+// ---------------------------------------------------------------- berita
+function waktuRelatif(t) {
+  const d = new Date(t), m = (Date.now() - d) / 60000;
+  if (m < 60) return `${Math.max(1, Math.round(m))} menit lalu`;
+  if (m < 1440) return `${Math.round(m / 60)} jam lalu`;
+  return d.toLocaleDateString("id-ID", { day: "numeric", month: "short" }) + ", " + d.toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" });
+}
+function daftarBerita(rows, kosong) {
+  if (!rows.length) return `<p class="small muted" style="margin:10px 0 0">${kosong}</p>`;
+  return rows.map(b => `<a class="berita" href="${esc(b.link)}" target="_blank" rel="noopener">
+    <b>${esc(b.judul)}</b>
+    <div class="meta">${(b.cocok || []).map(k => `<span class="tag">${esc(k)}</span>`).join("")}${esc(b.sumber || "")}, ${b.terbit ? waktuRelatif(b.terbit) : ""}</div></a>`).join("");
+}
+async function cariBerita(q, hari = 7) {
+  const { data, error } = await sb.rpc("saham_cari_berita", { p_q: q || null, p_hari: hari });
+  if (error) console.error(error);
+  return data || [];
+}
+async function renderBerita() {
+  const q = $("#q-berita").value.trim();
+  const pilih = STATE.beritaChip || "";
+  const kata = q || pilih;
+  const kunci = [...new Set([...STATE.watch.filter(w => w.aktif).map(w => w.kode), ...(STATE.kunci || []).map(k => k.kata)])];
+  $("#chips-berita").innerHTML = [["", "Semua"], ...kunci.map(k => [k, k])].map(([v, n]) =>
+    `<button type="button" role="radio" aria-checked="${!q && v === pilih}" data-chip="${esc(v)}">${esc(n)}</button>`).join("");
+  $("#chips-berita").querySelectorAll("[data-chip]").forEach(b => b.onclick = () => { STATE.beritaChip = b.dataset.chip; $("#q-berita").value = ""; renderBerita(); });
+  const el = $("#list-berita");
+  el.innerHTML = `<p class="small muted" style="margin:10px 0 0">Memuat…</p>`;
+  const rows = await cariBerita(kata, 7);
+  el.innerHTML = daftarBerita(rows.slice(0, 30), kata
+    ? `Belum ada berita 7 hari terakhir yang memuat "${esc(kata)}". Berita diambil setiap 3 jam dari CNBC Indonesia, Antara, dan IDX Channel.`
+    : `Belum ada berita yang cocok dengan kata kunci. Berita diambil setiap 3 jam.`);
+}
+let tBerita;
+$("#q-berita").addEventListener("input", () => { clearTimeout(tBerita); tBerita = setTimeout(renderBerita, 350); });
+async function muatKunci() {
+  const { data } = await sb.from("saham_kata_kunci").select("kata").order("kata");
+  STATE.kunci = data || [];
+  $("#list-kunci").innerHTML = STATE.kunci.length ? STATE.kunci.map(k =>
+    `<button type="button" class="hapus" data-hapus-kunci="${esc(k.kata)}" aria-label="Hapus kata kunci ${esc(k.kata)}">${esc(k.kata)} ✕</button>`).join("")
+    : `<p class="small muted" style="margin:0">Belum ada kata kunci tambahan.</p>`;
+  $("#list-kunci").querySelectorAll("[data-hapus-kunci]").forEach(b => b.onclick = async () => {
+    await sb.from("saham_kata_kunci").delete().eq("kata", b.dataset.hapusKunci); await muatKunci(); renderBerita();
+  });
+}
+$("#f-kunci").addEventListener("submit", async e => {
+  e.preventDefault();
+  const kata = e.target.kata.value.trim();
+  if (kata.length < 2) return;
+  const { error } = await sb.from("saham_kata_kunci").upsert({ kata });
+  if (error) return alert("Gagal menyimpan: " + error.message);
+  e.target.reset(); await muatKunci(); renderBerita();
 });
 
 // ---------------------------------------------------------------- unggah data asing (file Ringkasan Saham BEI)
