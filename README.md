@@ -33,6 +33,10 @@ Analisa teknikal otomatis untuk saham Bursa Efek Indonesia. Setiap hari bursa, G
 
 Setiap hari bursa, semua saham di `universe.txt` (±85 saham likuid) dinilai dengan aturan yang sama. Saham dengan rata-rata transaksi di bawah Rp 5 miliar/hari dilewati. Daftar lengkap dan alasannya ada di tab **Rekomendasi** di dashboard. Ubah daftar saham di `universe.txt` dan batas likuiditas di `screener.py`.
 
+## Data asing
+
+Data beli/jual asing tidak tersedia di Yahoo Finance, dan situs BEI menolak akses otomatis dari server. Karena itu datanya diunggah manual: unduh file **Ringkasan Saham** harian dari idx.co.id, lalu unggah di dashboard (tab **Catat**, beberapa file sekaligus boleh). Tab **Rekomendasi** lalu menampilkan net beli asing 1 hari, 1 minggu, dan 1 bulan, bisa diurutkan berdasarkan asing, dan bisa disaring ke saham yang diakumulasi asing (net beli dan net beli di minimal 60% hari).
+
 ## Portofolio saya
 
 <!-- PORTOFOLIO:START -->
@@ -118,6 +122,7 @@ Semua data bisa disimpan di satu database Supabase. Semua tabel memakai awalan `
 | `saham_fundamental` | PER, PBV, ROE, DER, pertumbuhan, nilai fundamental, laba rugi per kuartal |
 | `saham_analisa_terbaru` (view) | Analisa terakhir tiap saham |
 | `saham_screener` | Hasil pemindaian harian untuk tab Rekomendasi |
+| `saham_asing` | Foreign buy/sell harian dari file Ringkasan Saham BEI (diunggah lewat dashboard) |
 | `saham_posisi` (view) | Lot, harga rata-rata, modal, untung/rugi, dan keputusan hari ini untuk saham yang dipegang |
 
 **Cara memasang:**
@@ -128,7 +133,7 @@ Semua data bisa disimpan di satu database Supabase. Semua tabel memakai awalan `
 4. Di GitHub, buka **Settings → Secrets and variables → Actions → New repository secret**, lalu tambahkan:
    - `SUPABASE_URL`
    - `SUPABASE_SERVICE_KEY` (isi dengan Secret key)
-5. Untuk dashboard: jalankan `supabase/002_akses_dashboard.sql` lalu `supabase/003_screener.sql` di SQL Editor, lalu daftarkan akunmu:
+5. Untuk dashboard: jalankan `supabase/002_akses_dashboard.sql` lalu `supabase/003_screener.sql` dan `supabase/004_asing.sql` di SQL Editor, lalu daftarkan akunmu:
    (ganti `EMAIL_KAMU` di baris terakhir file dengan email akun Supabase kamu).
 6. (Opsional) Salin data lama: `python db.py impor-watchlist` dan `python db.py impor-transaksi`.
 

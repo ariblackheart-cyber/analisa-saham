@@ -149,6 +149,13 @@ form.f label { display: grid; gap: 4px; font-size: 13px; color: var(--muted); }
 form.f .full { grid-column: 1 / -1; }
 input, select { background: var(--surface-2); border: 1px solid var(--line); border-radius: var(--radius-sm); padding: 10px 12px; width: 100%; color: var(--ink); }
 .seg3 { grid-template-columns: 1fr 1.4fr 1fr !important; }
+.seg.kecil label { padding: 7px 6px; font-size: 13px; }
+.seg2 { grid-template-columns: 1fr 1fr; }
+.ctl-row { display: grid; grid-template-columns: 96px 1fr; align-items: center; gap: 10px; margin-top: 10px; }
+.cek { display: flex; gap: 8px; align-items: center; margin-top: 12px; font-size: 14px; }
+.cek input { width: auto; }
+.asing { grid-column: 1 / -1; margin-top: 10px; padding: 8px 10px; border-radius: var(--radius-sm); background: var(--surface-2); font-size: 13px; }
+.asing b { font-weight: 700; }
 .rek-aksi { grid-column: 1 / -1; display: flex; gap: 8px; align-items: center; justify-content: space-between; margin-top: 10px; flex-wrap: wrap; }
 .seg { display: grid; grid-template-columns: 1fr 1fr; border: 1px solid var(--line); border-radius: var(--radius-sm); overflow: hidden; }
 .seg input { position: absolute; opacity: 0; pointer-events: none; }
@@ -227,7 +234,25 @@ input, select { background: var(--surface-2); border: 1px solid var(--line); bor
           <label><input type="radio" name="rek" value="BELI,PANTAU" checked><span>BELI + PANTAU</span></label>
           <label><input type="radio" name="rek" value=""><span>Semua</span></label>
         </div>
+        <div class="ctl-row">
+          <span class="small muted">Urutkan</span>
+          <div class="seg seg2 kecil" role="radiogroup" aria-label="Urutkan">
+            <label><input type="radio" name="urut" value="teknikal" checked><span>Teknikal</span></label>
+            <label><input type="radio" name="urut" value="asing"><span>Asing</span></label>
+          </div>
+        </div>
+        <div class="ctl-row">
+          <span class="small muted">Periode asing</span>
+          <div class="seg seg3 kecil" role="radiogroup" aria-label="Periode asing">
+            <label><input type="radio" name="periode" value="1"><span>1 hari</span></label>
+            <label><input type="radio" name="periode" value="5"><span>1 minggu</span></label>
+            <label><input type="radio" name="periode" value="20" checked><span>1 bulan</span></label>
+          </div>
+        </div>
+        <label class="cek"><input type="checkbox" id="hanya-akum"> Hanya yang diakumulasi asing</label>
+        <p class="small muted" style="margin:8px 0 0" id="asing-info"></p>
       </div>
+      <div class="panel" id="asing-pasar" hidden></div>
       <div class="saham-list" id="list-rek"></div>
       <p class="small muted" style="margin:0">Hasil aturan teknikal mekanis, bukan rekomendasi investasi. Tidak memperhitungkan berita, fundamental, atau kondisi pasar. Selalu gunakan batas rugi.</p>
     </section>
@@ -249,6 +274,17 @@ input, select { background: var(--surface-2); border: 1px solid var(--line); bor
           <button class="btn full" type="submit">Simpan transaksi</button>
           <div class="msg full" id="trx-msg" hidden></div>
         </form>
+      </div>
+      <div class="panel">
+        <h2>Unggah data asing dari BEI</h2>
+        <ol class="small" style="margin:6px 0 10px;padding-left:18px">
+          <li>Buka idx.co.id, lalu Data Pasar, Ringkasan Perdagangan, <b>Ringkasan Saham</b>.</li>
+          <li>Pilih tanggal, lalu unduh file Excel-nya.</li>
+          <li>Pilih file di bawah. Beberapa file (beberapa tanggal) boleh sekaligus.</li>
+        </ol>
+        <input type="file" id="f-asing" accept=".xlsx,.xls,.csv" multiple>
+        <div id="asing-status" class="small" style="margin-top:10px"></div>
+        <p class="small muted" style="margin:10px 0 0" id="asing-tgl"></p>
       </div>
       <div class="panel">
         <h2>Riwayat transaksi</h2>
@@ -293,6 +329,7 @@ async function mulai() {
   if (!session) return tampilLogin();
   $("#v-login").hidden = true; $("#v-app").hidden = false;
   await muatSemua();
+  muatTanggalAsing();
 }
 function tampilLogin() { $("#v-app").hidden = true; $("#v-login").hidden = false; }
 $("#f-login").addEventListener("submit", async e => {
@@ -348,6 +385,25 @@ function buka(tab) {
 function render() { renderRingkasan(); renderPortofolio(); renderCatat(); if (STATE.rek) renderRekomendasi(); }
 
 // ---------------------------------------------------------------- rekomendasi
+function renderAsingPasar(asing, hari) {
+  const el = $("#asing-pasar"), semua = Object.values(asing);
+  if (!semua.length) { el.hidden = true; return; }
+  el.hidden = false;
+  const top = semua.filter(a => +a.net_rupiah > 0).sort((a, b) => b.net_rupiah - a.net_rupiah).slice(0, 10);
+  const bawah = semua.filter(a => +a.net_rupiah < 0).sort((a, b) => a.net_rupiah - b.net_rupiah).slice(0, 5);
+  const kosong = `<tr><td colspan="4" class="small muted">Tidak ada.</td></tr>`;
+  const baris = list => list.map(a => `<tr><td><b>${esc(a.kode)}</b></td><td class="r ${kelas(+a.net_rupiah)}">${fmt(a.net_rupiah / 1e9, 1)}</td><td class="r">${a.hari_net_buy}/${a.hari_data}</td>
+    <td class="r">${STATE.watch.some(w => w.kode === a.kode && w.aktif) ? `<span class="small muted">Dipantau</span>` : `<button class="link" style="color:var(--accent)" data-pantau-asing="${esc(a.kode)}" type="button">Pantau</button>`}</td></tr>`).join("");
+  el.innerHTML = `<h2>Asing seluruh pasar, ${LABEL_PERIODE[hari]}</h2>
+    <p class="small muted" style="margin:4px 0 8px">Semua saham dari file BEI, termasuk yang tidak ada di daftar pindai. Dalam miliar rupiah (net lembar dikali harga penutupan).</p>
+    <div class="scroll"><table><thead><tr><th>Net beli terbesar</th><th class="r">Rp M</th><th class="r">Hari net beli</th><th></th></tr></thead><tbody>${baris(top) || kosong}</tbody></table></div>
+    <div class="scroll" style="margin-top:10px"><table><thead><tr><th>Net jual terbesar</th><th class="r">Rp M</th><th class="r">Hari net beli</th><th></th></tr></thead><tbody>${baris(bawah) || kosong}</tbody></table></div>`;
+  el.querySelectorAll("[data-pantau-asing]").forEach(b => b.onclick = async () => {
+    const { error } = await sb.from("saham_watchlist").upsert({ kode: b.dataset.pantauAsing, aktif: true });
+    if (error) return alert("Gagal menambahkan: " + error.message);
+    await muatSemua();
+  });
+}
 async function muatRekomendasi() {
   $("#list-rek").innerHTML = `<div class="panel empty">Memuat…</div>`;
   const last = await sb.from("saham_screener").select("tanggal").order("tanggal", { ascending: false }).limit(1);
@@ -355,16 +411,47 @@ async function muatRekomendasi() {
   if (!tgl) { STATE.rek = { tgl: null, rows: [] }; return renderRekomendasi(); }
   const r = await sb.from("saham_screener").select("*").eq("tanggal", tgl).order("nilai_total", { ascending: false });
   STATE.rek = { tgl, rows: r.data || [] };
+  await muatAsing(+document.querySelector('input[name="periode"]:checked').value);
   renderRekomendasi();
 }
-document.querySelectorAll('input[name="rek"]').forEach(i => i.addEventListener("change", renderRekomendasi));
+async function muatAsing(hari) {
+  STATE.asing ||= {};
+  if (STATE.asing[hari]) return;
+  const { data, error } = await sb.rpc("saham_asing_akumulasi", { p_hari: hari });
+  if (error) console.error(error);
+  STATE.asing[hari] = Object.fromEntries((data || []).map(x => [x.kode, x]));
+}
+const akumulasi = a => a && a.net_rupiah > 0 && a.hari_data > 0 && a.hari_net_buy / a.hari_data >= 0.6;
+const LABEL_PERIODE = { 1: "1 hari", 5: "1 minggu", 20: "1 bulan" };
+function teksAsing(a, hari) {
+  if (!a) return `<div class="asing muted">Belum ada data asing untuk periode ini.</div>`;
+  const net = +a.net_rupiah, arah = net > 0 ? "net beli" : net < 0 ? "net jual" : "seimbang";
+  return `<div class="asing">Asing ${LABEL_PERIODE[hari]}: <b class="${kelas(net)}">${arah} Rp ${fmt(Math.abs(net) / 1e9, 1)} M</b>
+    (${fmt(Math.abs(a.net_lembar) / LOT)} lot), net beli ${a.hari_net_buy} dari ${a.hari_data} hari${akumulasi(a) ? ". <b class='naik'>Diakumulasi asing.</b>" : "."}</div>`;
+}
+document.querySelectorAll('input[name="rek"], input[name="urut"]').forEach(i => i.addEventListener("change", renderRekomendasi));
+$("#hanya-akum").addEventListener("change", renderRekomendasi);
+document.querySelectorAll('input[name="periode"]').forEach(i => i.addEventListener("change", async () => {
+  await muatAsing(+i.value); renderRekomendasi();
+}));
 function renderRekomendasi() {
   const el = $("#list-rek"), { tgl, rows } = STATE.rek;
   if (!tgl) { el.innerHTML = `<div class="panel empty">Belum ada hasil pemindaian. Hasil pertama muncul setelah run harian berikutnya.</div>`; return; }
   const pilih = document.querySelector('input[name="rek"]:checked').value.split(",").filter(Boolean);
-  const tampil = rows.filter(r => !pilih.length || pilih.includes(r.keputusan));
-  $("#rek-info").textContent = `${rows.length} saham likuid dipindai pada penutupan ${tglID(tgl)}, diurutkan dari nilai tertinggi.`;
-  if (!tampil.length) { el.innerHTML = `<div class="panel empty">Hari ini tidak ada saham dengan keputusan ${pilih.join(" atau ")}. Coba pilihan "Semua".</div>`; return; }
+  const urut = document.querySelector('input[name="urut"]:checked').value;
+  const hari = +document.querySelector('input[name="periode"]:checked').value;
+  const asing = (STATE.asing || {})[hari] || {}, adaAsing = Object.keys(asing).length > 0;
+  const hanyaAkum = $("#hanya-akum").checked;
+  let tampil = rows.filter(r => !pilih.length || pilih.includes(r.keputusan));
+  if (hanyaAkum) tampil = tampil.filter(r => akumulasi(asing[r.kode]));
+  if (urut === "asing") tampil = [...tampil].sort((a, b) => (+(asing[b.kode] || {}).net_rupiah || -Infinity) - (+(asing[a.kode] || {}).net_rupiah || -Infinity));
+  $("#rek-info").textContent = `${rows.length} saham likuid dipindai pada penutupan ${tglID(tgl)}, diurutkan dari nilai ${urut === "asing" ? "net beli asing" : "teknikal"} tertinggi.`;
+  const contoh = Object.values(asing)[0];
+  $("#asing-info").innerHTML = adaAsing
+    ? `Data asing ${LABEL_PERIODE[hari]}: ${tglID(contoh.tanggal_awal)} sampai ${tglID(contoh.tanggal_akhir)}. Diakumulasi artinya net beli dan net beli di minimal 60% hari.`
+    : `Belum ada data asing. Unggah file Ringkasan Saham dari BEI di tab Catat.`;
+  renderAsingPasar(asing, hari);
+  if (!tampil.length) { el.innerHTML = `<div class="panel empty">Tidak ada saham yang cocok dengan pilihan ini. Coba "Semua" atau matikan saringan asing.</div>`; return; }
   el.innerHTML = tampil.map(r => {
     const dipantau = STATE.watch.some(w => w.kode === r.kode && w.aktif);
     const adaDetail = STATE.analisa.some(a => a.kode === r.kode);
@@ -380,6 +467,7 @@ function renderRekomendasi() {
       <div class="small muted">${(r.pola_candle || []).map(esc).join(", ") || "Tidak ada pola candle khusus"}</div>
       <div class="strip">${ASPEK.map(([k, n]) => `<div><i><b style="width:${r[k] * 10}%;background:${warnaNilai(r[k])}"></b></i>${n}<b>${fmt(r[k], 1)}</b></div>`).join("")}</div>
       ${ringkasAlasan(r)}
+      ${adaAsing ? teksAsing(asing[r.kode], hari) : ""}
       <div class="rek-aksi">
         <span class="small muted">Transaksi rata-rata Rp ${fmt(r.nilai_transaksi / 1e9, 1)} M/hari, batas rugi ${fmt(r.stop_loss)}, target ${fmt(r.target1)}</span>
         ${adaDetail ? `<button class="btn ghost" type="button" data-detail="${esc(r.kode)}">Lihat detail</button>`
@@ -783,6 +871,99 @@ $("#f-watch").addEventListener("submit", async e => {
   if (error) return alert("Gagal menyimpan: " + error.message);
   e.target.reset(); await muatSemua();
 });
+
+// ---------------------------------------------------------------- unggah data asing (file Ringkasan Saham BEI)
+function loadScript(src) {
+  return new Promise((ok, gagal) => { const s = document.createElement("script"); s.src = src; s.onload = ok; s.onerror = gagal; document.head.appendChild(s); });
+}
+const BULAN = { jan: 1, feb: 2, mar: 3, apr: 4, mei: 5, may: 5, jun: 6, jul: 7, agu: 8, agt: 8, aug: 8, sep: 9, okt: 10, oct: 10, nov: 11, des: 12, dec: 12 };
+function keTanggal(v) {
+  if (v == null || v === "") return null;
+  if (v instanceof Date && !isNaN(v)) {
+    const p2 = n => String(n).padStart(2, "0");
+    return `${v.getFullYear()}-${p2(v.getMonth() + 1)}-${p2(v.getDate())}`;
+  }
+  if (typeof v === "number" && v > 30000 && v < 80000) {           // nomor tanggal Excel
+    const d = new Date(Math.round((v - 25569) * 86400000)); return d.toISOString().slice(0, 10);
+  }
+  const s = String(v).trim();
+  let m = s.match(/^(\d{4})-(\d{2})-(\d{2})/); if (m) return `${m[1]}-${m[2]}-${m[3]}`;
+  m = s.match(/^(\d{1,2})[\/\-.](\d{1,2})[\/\-.](\d{4})/); if (m) return `${m[3]}-${m[2].padStart(2, "0")}-${m[1].padStart(2, "0")}`;
+  m = s.match(/^(\d{1,2})\s+([A-Za-z]{3})[A-Za-z]*\s+(\d{4})/);
+  if (m && BULAN[m[2].toLowerCase()]) return `${m[3]}-${String(BULAN[m[2].toLowerCase()]).padStart(2, "0")}-${m[1].padStart(2, "0")}`;
+  return null;
+}
+function angka(v) {
+  if (typeof v === "number") return v;
+  let t = String(v ?? "").replace(/\s/g, "");
+  if (/^-?\d{1,3}(\.\d{3})+(,\d+)?$/.test(t)) t = t.replace(/\./g, "").replace(",", ".");   // 1.234.567,5
+  else if (/^-?\d{1,3}(,\d{3})+(\.\d+)?$/.test(t)) t = t.replace(/,/g, "");                 // 1,234,567.5
+  else t = t.replace(",", ".");
+  return +t || 0;
+}
+// rows: array baris (array sel). Mengembalikan { tanggal, data } atau melempar Error yang jelas.
+function bacaRingkasan(rows, namaFile) {
+  const norm = x => String(x ?? "").toLowerCase().replace(/\s+/g, " ").trim();
+  const hi = rows.findIndex(r => r.some(c => /^kode|^stock code|^code$/.test(norm(c))) && r.some(c => /foreign ?buy/.test(norm(c))));
+  if (hi < 0) {
+    const contoh = (rows.find(r => r.filter(Boolean).length > 3) || []).slice(0, 8).join(", ");
+    throw new Error(`Kolom "Kode Saham" dan "Foreign Buy" tidak ditemukan. Baris judul yang terbaca: ${contoh || "(kosong)"}`);
+  }
+  const h = rows[hi].map(norm), col = re => h.findIndex(x => re.test(x));
+  const c = { kode: col(/^kode|^stock code|^code$/), close: col(/^penutupan|^close/), volume: col(/^volume$/), nilai: col(/^nilai$|^value$/),
+              buy: col(/foreign ?buy/), sell: col(/foreign ?sell/), tgl: col(/tanggal perdagangan|last trading date|^date|^tanggal/) };
+  if (c.sell < 0) throw new Error(`Kolom "Foreign Sell" tidak ditemukan.`);
+  const data = [];
+  let tanggal = null;
+  for (const r of rows.slice(hi + 1)) {
+    const kode = String(r[c.kode] ?? "").trim().toUpperCase();
+    if (!/^[A-Z]{4}$/.test(kode)) continue;
+    if (!tanggal && c.tgl >= 0) tanggal = keTanggal(r[c.tgl]);
+    data.push({ kode, close: c.close >= 0 ? angka(r[c.close]) : null, volume: c.volume >= 0 ? Math.round(angka(r[c.volume])) : null,
+                nilai: c.nilai >= 0 ? Math.round(angka(r[c.nilai])) : null,
+                foreign_buy: Math.round(angka(r[c.buy])), foreign_sell: Math.round(angka(r[c.sell])) });
+  }
+  const dariNama = (namaFile.match(/(20\d{2})(\d{2})(\d{2})/) || []);
+  if (dariNama.length) tanggal = `${dariNama[1]}-${dariNama[2]}-${dariNama[3]}`;   // nama file BEI berisi tanggal
+  if (!tanggal) throw new Error("Tanggal tidak terbaca dari isi atau nama file.");
+  if (!data.length) throw new Error("Tidak ada baris saham yang terbaca.");
+  return { tanggal, data: data.map(d => ({ ...d, tanggal })) };
+}
+async function bacaFile(file) {
+  if (/\.csv$/i.test(file.name)) {
+    const teks = await file.text(), pemisah = (teks.split("\n")[0].match(/;/g) || []).length > (teks.split("\n")[0].match(/,/g) || []).length ? ";" : ",";
+    return teks.split(/\r?\n/).map(l => l.split(pemisah).map(x => x.replace(/^"|"$/g, "")));
+  }
+  if (!window.XLSX) await loadScript("https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js");
+  const wb = XLSX.read(await file.arrayBuffer(), { type: "array", cellDates: true });
+  return XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header: 1, raw: true, defval: "" });
+}
+$("#f-asing").addEventListener("change", async e => {
+  const files = [...e.target.files], out = $("#asing-status");
+  out.innerHTML = files.map((f, i) => `<div id="as-${i}">${esc(f.name)}: membaca…</div>`).join("");
+  for (const [i, f] of files.entries()) {
+    const baris = $("#as-" + i);
+    try {
+      const { tanggal, data } = bacaRingkasan(await bacaFile(f), f.name);
+      for (let j = 0; j < data.length; j += 500) {
+        const { error } = await sb.from("saham_asing").upsert(data.slice(j, j + 500), { onConflict: "kode,tanggal" });
+        if (error) throw new Error(error.message);
+      }
+      baris.innerHTML = `<span class="naik">Tersimpan</span>: ${tglID(tanggal)}, ${data.length} saham.`;
+    } catch (err) {
+      baris.innerHTML = `<span class="turun">${esc(f.name)} gagal</span>: ${esc(err.message)}`;
+    }
+  }
+  e.target.value = "";
+  STATE.asing = {}; STATE.rek = null;
+  await muatTanggalAsing();
+});
+async function muatTanggalAsing() {
+  const { data } = await sb.rpc("saham_asing_tanggal");
+  const el = $("#asing-tgl");
+  if (!data || !data.length) { el.textContent = "Belum ada data asing tersimpan."; return; }
+  el.textContent = `${data.length} tanggal tersimpan, terakhir ${tglID(data[0].tanggal)}, terlama ${tglID(data[data.length - 1].tanggal)}. Untuk akumulasi 1 bulan dibutuhkan sekitar 20 hari bursa.`;
+}
 
 mulai();
 </script>
