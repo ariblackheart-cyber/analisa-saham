@@ -1,0 +1,653 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Analisa Saham</title>
+<meta name="description" content="Dashboard pribadi analisa teknikal dan portofolio saham BEI">
+<meta name="theme-color" content="#EEF1F5" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#121822" media="(prefers-color-scheme: dark)">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="https://unpkg.com/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js"></script>
+<style>
+:root {
+  --bg: #EEF1F5;
+  --surface: #FFFFFF;
+  --surface-2: #F6F8FA;
+  --ink: #18212D;
+  --muted: #5B6676;
+  --line: #DCE1E8;
+  --naik: #0E8A6A;
+  --turun: #CF3E35;
+  --pantau: #B7830A;
+  --tunggu: #6B7686;
+  --accent: #2F4AC4;
+  --accent-ink: #FFFFFF;
+  --radius-lg: 18px;
+  --radius-sm: 8px;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #121822; --surface: #1B2330; --surface-2: #222B39; --ink: #E8ECF2; --muted: #97A2B3;
+    --line: #2D3746; --naik: #2FBF94; --turun: #F0675D; --pantau: #E2B13A; --tunggu: #8E99AA;
+    --accent: #7E92FF; --accent-ink: #0F1420; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #121822; --surface: #1B2330; --surface-2: #222B39; --ink: #E8ECF2; --muted: #97A2B3;
+  --line: #2D3746; --naik: #2FBF94; --turun: #F0675D; --pantau: #E2B13A; --tunggu: #8E99AA;
+  --accent: #7E92FF; --accent-ink: #0F1420; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  background: var(--bg); color: var(--ink);
+  font-family: "Plus Jakarta Sans", system-ui, sans-serif; font-size: 15px; line-height: 1.5;
+  font-variant-numeric: tabular-nums; -webkit-font-smoothing: antialiased;
+  padding-bottom: calc(76px + env(safe-area-inset-bottom));
+}
+button, input, select { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.wrap { max-width: 1080px; margin: 0 auto; padding: 0 16px; }
+h1, h2, h3 { margin: 0; line-height: 1.2; }
+h1 { font-size: 22px; font-weight: 800; letter-spacing: -0.01em; }
+h2 { font-size: 18px; font-weight: 700; }
+h3 { font-size: 15px; font-weight: 700; }
+.muted { color: var(--muted); }
+.small { font-size: 13px; }
+.naik { color: var(--naik); } .turun { color: var(--turun); }
+[hidden] { display: none !important; }
+
+/* top bar */
+.top { position: sticky; top: 0; z-index: 5; background: var(--bg); border-bottom: 1px solid var(--line); }
+.top .wrap { display: flex; align-items: center; gap: 12px; padding-top: 12px; padding-bottom: 12px; }
+.top .grow { flex: 1; min-width: 0; }
+.iconbtn { background: none; border: 1px solid var(--line); border-radius: 999px; padding: 6px 12px; cursor: pointer; font-size: 13px; }
+
+/* tabs (bottom on mobile) */
+.tabs { position: fixed; left: 0; right: 0; bottom: 0; z-index: 6; background: var(--surface);
+  border-top: 1px solid var(--line); padding-bottom: env(safe-area-inset-bottom); }
+.tabs .wrap { display: grid; grid-template-columns: repeat(3, 1fr); }
+.tabs button { background: none; border: 0; padding: 14px 4px; font-weight: 600; color: var(--muted); cursor: pointer; }
+.tabs button[aria-selected="true"] { color: var(--accent); box-shadow: inset 0 3px 0 var(--accent); }
+@media (min-width: 760px) {
+  body { padding-bottom: 24px; }
+  .tabs { position: static; border: 0; background: none; }
+  .tabs .wrap { display: flex; gap: 6px; padding-top: 12px; }
+  .tabs button { flex: 0 0 auto; padding: 8px 16px; border-radius: 999px; }
+  .tabs button[aria-selected="true"] { background: var(--accent); color: var(--accent-ink); box-shadow: none; }
+}
+
+main.wrap { padding-top: 16px; }
+section.view { display: grid; gap: 14px; }
+
+/* stock verdict rows */
+.saham-list { display: grid; gap: 12px; }
+@media (min-width: 760px) { .saham-list { grid-template-columns: 1fr 1fr; } }
+.saham {
+  display: grid; grid-template-columns: 1fr auto; gap: 4px 16px; align-items: end;
+  background: var(--surface); border-radius: var(--radius-lg); padding: 16px 18px 14px;
+  border: 1px solid var(--line); cursor: pointer; text-align: left; width: 100%;
+}
+.saham:hover { border-color: var(--accent); }
+.saham .kode { font-size: 22px; font-weight: 800; letter-spacing: 0.02em; }
+.saham .harga { font-size: 14px; }
+.verdict { text-align: right; grid-row: span 2; }
+.verdict .skor { font-size: 44px; font-weight: 800; line-height: 0.95; letter-spacing: -0.03em; }
+.verdict .skor small { font-size: 15px; font-weight: 600; color: var(--muted); letter-spacing: 0; }
+.verdict .kata { font-weight: 800; font-size: 14px; letter-spacing: 0.04em; }
+.v-BELI { color: var(--naik); } .v-PANTAU { color: var(--pantau); } .v-TUNGGU { color: var(--tunggu); } .v-HINDARI { color: var(--turun); }
+.strip { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin-top: 10px; }
+.strip div { font-size: 11px; color: var(--muted); display: grid; line-height: 1.3; }
+.strip div b { font-size: 13px; color: var(--ink); font-weight: 700; }
+.strip i { display: block; height: 6px; border-radius: 3px; background: var(--surface-2); overflow: hidden; margin-bottom: 4px; }
+.strip i b { display: block; height: 100%; border-radius: 3px; }
+
+/* panels */
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 16px 18px; }
+.panel > h2, .panel > h3 { margin-bottom: 10px; }
+.grid2 { display: grid; gap: 14px; }
+@media (min-width: 760px) { .grid2 { grid-template-columns: 1fr 1fr; } }
+table { width: 100%; border-collapse: collapse; font-size: 14px; }
+th, td { text-align: left; padding: 7px 6px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-weight: 600; color: var(--muted); font-size: 13px; }
+td.r, th.r { text-align: right; }
+.scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.kv { display: grid; grid-template-columns: auto 1fr; gap: 4px 16px; font-size: 14px; }
+.kv dt { color: var(--muted); } .kv dd { margin: 0; text-align: right; font-weight: 600; }
+.pill { display: inline-block; padding: 2px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; background: var(--surface-2); }
+
+/* detail */
+.back { background: none; border: 0; color: var(--accent); font-weight: 600; padding: 0; cursor: pointer; }
+.detail-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.detail-head .kode { font-size: 34px; font-weight: 800; letter-spacing: 0.01em; line-height: 1; }
+.chart { width: 100%; }
+.chart-label { font-size: 12px; color: var(--muted); margin: 8px 0 2px; }
+.aspek { display: grid; gap: 12px; }
+.aspek details { border-top: 1px solid var(--line); padding-top: 10px; }
+.aspek summary { display: flex; justify-content: space-between; cursor: pointer; font-weight: 600; list-style: none; }
+.aspek summary::-webkit-details-marker { display: none; }
+.aspek ul { margin: 8px 0 0; padding-left: 18px; font-size: 14px; }
+.aspek li span { font-weight: 700; }
+.spark { width: 100%; height: 64px; display: block; }
+
+/* forms */
+form.f { display: grid; gap: 10px; grid-template-columns: 1fr 1fr; }
+form.f label { display: grid; gap: 4px; font-size: 13px; color: var(--muted); }
+form.f .full { grid-column: 1 / -1; }
+input, select { background: var(--surface-2); border: 1px solid var(--line); border-radius: var(--radius-sm); padding: 10px 12px; width: 100%; color: var(--ink); }
+.seg { display: grid; grid-template-columns: 1fr 1fr; border: 1px solid var(--line); border-radius: var(--radius-sm); overflow: hidden; }
+.seg input { position: absolute; opacity: 0; pointer-events: none; }
+.seg label { text-align: center; padding: 10px; cursor: pointer; color: var(--ink); font-weight: 600; font-size: 14px; }
+.seg input:checked + span { color: var(--accent-ink); }
+.seg label:has(input:checked) { background: var(--accent); color: var(--accent-ink); }
+.btn { background: var(--accent); color: var(--accent-ink); border: 0; border-radius: var(--radius-sm); padding: 11px 16px; font-weight: 700; cursor: pointer; }
+.btn.ghost { background: none; color: var(--accent); border: 1px solid var(--line); }
+.btn:disabled { opacity: 0.6; cursor: default; }
+.link { background: none; border: 0; color: var(--turun); cursor: pointer; font-size: 13px; padding: 0; }
+.msg { font-size: 14px; padding: 10px 12px; border-radius: var(--radius-sm); background: var(--surface-2); }
+.msg.err { color: var(--turun); }
+.empty { text-align: center; padding: 28px 16px; color: var(--muted); }
+
+/* login */
+.login { min-height: 100vh; display: grid; place-items: center; padding: 24px 16px; }
+.login .card { width: 100%; max-width: 380px; display: grid; gap: 14px; }
+.login .big { font-size: 34px; font-weight: 800; letter-spacing: -0.02em; line-height: 1.05; }
+@media (prefers-reduced-motion: no-preference) {
+  .saham { transition: border-color .15s; }
+}
+</style>
+</head>
+<body>
+
+<div id="v-login" class="login" hidden>
+  <form class="card" id="f-login">
+    <div class="big">Analisa Saham</div>
+    <p class="muted" style="margin:0">Masuk dengan akun yang sama seperti dompetku.</p>
+    <label class="small muted">Email<input type="email" name="email" autocomplete="email" required></label>
+    <label class="small muted">Password<input type="password" name="password" autocomplete="current-password" required></label>
+    <button class="btn" type="submit">Masuk</button>
+    <div class="msg err" id="login-err" hidden></div>
+  </form>
+</div>
+
+<div id="v-app" hidden>
+  <header class="top">
+    <div class="wrap">
+      <div class="grow">
+        <h1>Analisa Saham</h1>
+        <div class="small muted" id="tgl-data"></div>
+      </div>
+      <button class="iconbtn" id="btn-logout" type="button">Keluar</button>
+    </div>
+  </header>
+
+  <nav class="tabs" role="tablist" aria-label="Halaman">
+    <div class="wrap">
+      <button role="tab" data-tab="ringkasan" aria-selected="true">Ringkasan</button>
+      <button role="tab" data-tab="portofolio" aria-selected="false">Portofolio</button>
+      <button role="tab" data-tab="catat" aria-selected="false">Catat</button>
+    </div>
+  </nav>
+
+  <main class="wrap">
+    <section class="view" id="t-ringkasan">
+      <div class="saham-list" id="list-saham"></div>
+    </section>
+
+    <section class="view" id="t-detail" hidden></section>
+
+    <section class="view" id="t-portofolio" hidden></section>
+
+    <section class="view" id="t-catat" hidden>
+      <div class="panel">
+        <h2>Catat transaksi</h2>
+        <form class="f" id="f-trx">
+          <div class="seg full" role="radiogroup" aria-label="Jenis transaksi">
+            <label><input type="radio" name="aksi" value="beli" checked><span>Beli</span></label>
+            <label><input type="radio" name="aksi" value="jual"><span>Jual</span></label>
+          </div>
+          <label>Kode saham<input name="kode" required maxlength="6" placeholder="RAJA" autocapitalize="characters"></label>
+          <label>Tanggal<input name="tanggal" type="date" required></label>
+          <label>Lot<input name="lot" type="number" min="1" step="1" required inputmode="numeric"></label>
+          <label>Harga per lembar<input name="harga" type="number" min="1" step="1" required inputmode="numeric"></label>
+          <button class="btn full" type="submit">Simpan transaksi</button>
+          <div class="msg full" id="trx-msg" hidden></div>
+        </form>
+      </div>
+      <div class="panel">
+        <h2>Riwayat transaksi</h2>
+        <div class="scroll" id="list-trx"></div>
+      </div>
+      <div class="panel">
+        <h2>Daftar saham dipantau</h2>
+        <p class="small muted" style="margin:0 0 10px">Saham baru dianalisa mulai run berikutnya (setiap hari bursa pukul 18.15 WITA).</p>
+        <form class="f" id="f-watch">
+          <label>Kode saham<input name="kode" required maxlength="6" placeholder="BBCA" autocapitalize="characters"></label>
+          <label style="align-self:end"><button class="btn" type="submit">Tambahkan</button></label>
+        </form>
+        <div id="list-watch" style="margin-top:12px"></div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<script>
+// ---------------------------------------------------------------- konfigurasi
+// Publishable key memang aman ditaruh di halaman publik. Akses data dibatasi Row Level Security:
+// hanya akun yang terdaftar di tabel saham_pemilik yang bisa membaca/menulis.
+const SUPABASE_URL = "https://ozuyxymtvtonivohxuoj.supabase.co";
+const SUPABASE_KEY = "sb_publishable_MvMpajFUUALK17aw-z1Kvw_a_ZCnThL";
+const FEE_BELI = 0.0015, FEE_JUAL = 0.0025, LOT = 100;
+const ASPEK = [["nilai_tren","Tren"],["nilai_volume","Volume"],["nilai_stochastic","Stoch"],["nilai_momentum","Momentum"],["nilai_candle","Candle"]];
+
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const $ = (s, el = document) => el.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const fmt = (x, d = 0) => x == null || isNaN(x) ? "-" : Number(x).toLocaleString("id-ID", { minimumFractionDigits: d, maximumFractionDigits: d });
+const pct = (x, d = 2) => x == null || isNaN(x) ? "-" : (x > 0 ? "+" : "") + fmt(x, d) + "%";
+const kelas = x => x > 0 ? "naik" : x < 0 ? "turun" : "";
+const warnaNilai = v => v >= 6 ? "var(--naik)" : v >= 4 ? "var(--pantau)" : "var(--turun)";
+const tglID = s => s ? new Date(s + "T00:00:00").toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" }) : "";
+
+let STATE = { analisa: [], trx: [], watch: [], tab: "ringkasan" };
+
+// ---------------------------------------------------------------- auth
+async function mulai() {
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) return tampilLogin();
+  $("#v-login").hidden = true; $("#v-app").hidden = false;
+  await muatSemua();
+}
+function tampilLogin() { $("#v-app").hidden = true; $("#v-login").hidden = false; }
+$("#f-login").addEventListener("submit", async e => {
+  e.preventDefault();
+  const f = new FormData(e.target), err = $("#login-err"), b = e.target.querySelector("button");
+  b.disabled = true; err.hidden = true;
+  const { error } = await sb.auth.signInWithPassword({ email: f.get("email"), password: f.get("password") });
+  b.disabled = false;
+  if (error) { err.textContent = "Email atau password salah."; err.hidden = false; return; }
+  mulai();
+});
+$("#btn-logout").addEventListener("click", async () => { await sb.auth.signOut(); tampilLogin(); });
+
+// ---------------------------------------------------------------- data
+async function muatSemua() {
+  const [a, t, w] = await Promise.all([
+    sb.from("saham_analisa_terbaru").select("*"),
+    sb.from("saham_transaksi").select("*").order("tanggal").order("id"),
+    sb.from("saham_watchlist").select("*").order("kode"),
+  ]);
+  const gagal = [a, t, w].find(r => r.error);
+  STATE.analisa = (a.data || []).sort((x, y) => y.nilai_total - x.nilai_total);
+  STATE.trx = t.data || []; STATE.watch = w.data || [];
+  STATE.aksesKosong = !gagal && !STATE.analisa.length && !STATE.watch.length;
+  const tgl = STATE.analisa.map(r => r.tanggal).sort().pop();
+  $("#tgl-data").textContent = tgl ? "Data penutupan " + tglID(tgl) : "";
+  if (gagal) console.error(gagal.error);
+  render();
+}
+
+// posisi dihitung sama seperti portofolio.py (rata-rata tertimbang, tidak berubah saat jual)
+function hitungPosisi(trx) {
+  const per = {};
+  for (const r of trx) {
+    const p = per[r.kode] ||= { kode: r.kode, lembar: 0, avg: 0, realized: 0, riwayat: [] };
+    const n = r.lot * LOT, h = Number(r.harga);
+    if (r.aksi === "beli") { p.avg = (p.avg * p.lembar + h * n) / (p.lembar + n); p.lembar += n; }
+    else { const m = Math.min(n, p.lembar); p.realized += (h - p.avg) * m - h * m * FEE_JUAL; p.lembar -= m; if (!p.lembar) p.avg = 0; }
+    p.riwayat.push(r);
+  }
+  return Object.values(per);
+}
+
+// ---------------------------------------------------------------- tab
+document.querySelectorAll(".tabs button").forEach(b => b.addEventListener("click", () => buka(b.dataset.tab)));
+function buka(tab) {
+  STATE.tab = tab;
+  document.querySelectorAll(".tabs button").forEach(b => b.setAttribute("aria-selected", b.dataset.tab === tab));
+  for (const id of ["ringkasan", "portofolio", "catat", "detail"]) $("#t-" + id).hidden = id !== tab;
+  window.scrollTo(0, 0);
+}
+function render() { renderRingkasan(); renderPortofolio(); renderCatat(); }
+
+// ---------------------------------------------------------------- ringkasan
+function renderRingkasan() {
+  const el = $("#list-saham");
+  if (STATE.aksesKosong) {
+    el.innerHTML = `<div class="panel empty">Belum ada data yang bisa dibaca akun ini. Pastikan akses dashboard sudah diaktifkan di Supabase (file <b>supabase/002_akses_dashboard.sql</b>).</div>`;
+    return;
+  }
+  if (!STATE.analisa.length) { el.innerHTML = `<div class="panel empty">Belum ada hasil analisa. Hasil muncul setelah workflow harian berjalan.</div>`; return; }
+  el.innerHTML = STATE.analisa.map(r => `
+    <button class="saham" data-kode="${esc(r.kode)}" aria-label="Buka detail ${esc(r.kode)}">
+      <div>
+        <div class="kode">${esc(r.kode)}</div>
+        <div class="harga">${fmt(r.close)} <span class="${kelas(r.perubahan_pct)}">${pct(r.perubahan_pct)}</span></div>
+      </div>
+      <div class="verdict">
+        <div class="skor">${fmt(r.nilai_total, 1)}<small>/10</small></div>
+        <div class="kata v-${esc(r.keputusan)}">${esc(r.keputusan)}</div>
+      </div>
+      <div class="small muted">${(r.pola_candle || []).map(esc).join(", ") || "Tidak ada pola candle khusus"}</div>
+      <div class="strip">${ASPEK.map(([k, n]) => `<div><i><b style="width:${r[k] * 10}%;background:${warnaNilai(r[k])}"></b></i>${n}<b>${fmt(r[k], 1)}</b></div>`).join("")}</div>
+    </button>`).join("");
+  el.querySelectorAll(".saham").forEach(b => b.addEventListener("click", () => bukaDetail(b.dataset.kode)));
+}
+
+// ---------------------------------------------------------------- indikator (sama dengan indikator.py)
+const sma = (a, n) => a.map((_, i) => i < n - 1 ? null : a.slice(i - n + 1, i + 1).reduce((s, x) => s + x, 0) / n);
+function ema(a, n) { const k = 2 / (n + 1); let p = null; return a.map(x => (p = p == null ? x : x * k + p * (1 - k))); }
+function rsi(c, n = 14) {
+  const out = Array(c.length).fill(null); let g = null, l = null, cnt = 0;
+  for (let i = 1; i < c.length; i++) {
+    const d = c[i] - c[i - 1], up = Math.max(d, 0), dn = Math.max(-d, 0);
+    g = g == null ? up : g + (up - g) / n; l = l == null ? dn : l + (dn - l) / n; cnt++;
+    if (cnt >= n) out[i] = l === 0 ? 100 : 100 - 100 / (1 + g / l);
+  }
+  return out;
+}
+function stochOf(a, n) {
+  return a.map((x, i) => {
+    if (x == null || i < n - 1) return null;
+    const w = a.slice(i - n + 1, i + 1); if (w.some(v => v == null)) return null;
+    const lo = Math.min(...w), hi = Math.max(...w); return hi === lo ? null : 100 * (x - lo) / (hi - lo);
+  });
+}
+const smaN = (a, n) => a.map((_, i) => { const w = a.slice(Math.max(0, i - n + 1), i + 1); return i < n - 1 || w.some(v => v == null) ? null : w.reduce((s, x) => s + x, 0) / n; });
+function bb(c, n = 20, k = 2) {
+  const m = sma(c, n);
+  return c.map((_, i) => { if (m[i] == null) return [null, null]; const w = c.slice(i - n + 1, i + 1); const sd = Math.sqrt(w.reduce((s, x) => s + (x - m[i]) ** 2, 0) / n); return [m[i] + k * sd, m[i] - k * sd]; });
+}
+
+// ---------------------------------------------------------------- detail
+let CHARTS = [];
+async function bukaDetail(kode) {
+  const r = STATE.analisa.find(x => x.kode === kode);
+  const el = $("#t-detail");
+  buka("detail");
+  el.innerHTML = `<button class="back" type="button" id="btn-back">Kembali ke ringkasan</button><div class="panel empty">Memuat ${esc(kode)}…</div>`;
+  $("#btn-back").onclick = () => buka("ringkasan");
+  const [h, hist, f] = await Promise.all([
+    sb.from("saham_harga_harian").select("tanggal,open,high,low,close,volume").eq("kode", kode).order("tanggal").limit(1000),
+    sb.from("saham_analisa_harian").select("tanggal,nilai_total,keputusan").eq("kode", kode).order("tanggal").limit(365),
+    sb.from("saham_fundamental").select("*").eq("kode", kode).order("tanggal", { ascending: false }).limit(1),
+  ]);
+  const harga = (h.data || []).map(x => ({ ...x, open: +x.open, high: +x.high, low: +x.low, close: +x.close, volume: +x.volume }));
+  const fund = (f.data || [])[0];
+  const pos = hitungPosisi(STATE.trx).find(p => p.kode === kode && p.lembar > 0);
+
+  el.innerHTML = `
+    <button class="back" type="button" id="btn-back">Kembali ke ringkasan</button>
+    <div class="detail-head">
+      <div>
+        <div class="kode">${esc(kode)}</div>
+        <div>${fmt(r.close)} <span class="${kelas(r.perubahan_pct)}">${pct(r.perubahan_pct)}</span> <span class="muted small">${tglID(r.tanggal)}</span></div>
+      </div>
+      <div class="verdict" style="grid-row:auto">
+        <div class="skor">${fmt(r.nilai_total, 1)}<small>/10</small></div>
+        <div class="kata v-${esc(r.keputusan)}">${esc(r.keputusan)}</div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="chart-label">Harga, MA5, MA20, MA100, Bollinger (20,2)</div><div class="chart" id="c-harga"></div>
+      <div class="chart-label">Volume</div><div class="chart" id="c-vol"></div>
+      <div class="chart-label">MACD (12,26,9)</div><div class="chart" id="c-macd"></div>
+      <div class="chart-label">Stoch RSI (14,14,3,3)</div><div class="chart" id="c-srsi"></div>
+    </div>
+
+    <div class="grid2">
+      <div class="panel">
+        <h2>Kenapa nilainya ${fmt(r.nilai_total, 1)}</h2>
+        <div class="aspek">${ASPEK.map(([k, n]) => {
+          const key = { nilai_tren: "Tren", nilai_volume: "Volume", nilai_stochastic: "Stochastic", nilai_momentum: "Momentum", nilai_candle: "Candle" }[k];
+          const rinci = (r.rincian || {})[key] || [];
+          return `<details><summary><span>${n}</span><span style="color:${warnaNilai(r[k])}">${fmt(r[k], 1)}</span></summary>
+            <ul>${rinci.map(x => `<li><span class="${kelas(x.poin)}">${x.poin > 0 ? "+" : ""}${fmt(x.poin, 2)}</span> ${esc(x.alasan)}</li>`).join("") || "<li>Tidak ada rincian.</li>"}</ul></details>`;
+        }).join("")}</div>
+        <p class="small muted" style="margin:12px 0 0">Setiap aspek mulai dari 5, lalu ditambah atau dikurangi poin. Bobot: Tren 25%, Volume 20%, Stoch 20%, Momentum 20%, Candle 15%.</p>
+      </div>
+      <div class="panel">
+        <h2>Level harga</h2>
+        <dl class="kv">
+          <dt>Support 20 hari</dt><dd>${fmt(r.support)}</dd>
+          <dt>Resistance 20 hari</dt><dd>${fmt(r.resistance)}</dd>
+          <dt>Batas rugi</dt><dd class="turun">${fmt(r.stop_loss)}</dd>
+          <dt>Target 1</dt><dd class="naik">${fmt(r.target1)}</dd>
+          <dt>Target 2</dt><dd class="naik">${fmt(r.target2)}</dd>
+          <dt>RSI (14)</dt><dd>${fmt(r.rsi, 1)}</dd>
+          <dt>Volume vs rata-rata 20 hari</dt><dd>${fmt(r.volume_ratio, 2)}x</dd>
+        </dl>
+        <h3 style="margin-top:16px">Riwayat nilai total</h3>
+        ${sparkline(hist.data || [])}
+      </div>
+    </div>
+
+    ${pos ? `<div class="panel"><h2>Posisi kamu</h2>${tabelPosisi([pos])}${tabelAvgDown(pos, r)}</div>` : ""}
+
+    ${fund ? panelFundamental(fund) : ""}
+    <p class="small muted">Keputusan berasal dari aturan teknikal mekanis, bukan rekomendasi. Selalu gunakan batas rugi.</p>`;
+  $("#btn-back").onclick = () => buka("ringkasan");
+  gambarChart(harga);
+}
+
+function sparkline(rows) {
+  if (rows.length < 2) return `<p class="small muted">Riwayat akan terisi setiap hari bursa.</p>`;
+  const w = 300, h = 64, xs = i => i / (rows.length - 1) * w, ys = v => h - v / 10 * h;
+  const pts = rows.map((r, i) => `${xs(i).toFixed(1)},${ys(+r.nilai_total).toFixed(1)}`).join(" ");
+  return `<svg class="spark" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" role="img" aria-label="Riwayat nilai total">
+    <line x1="0" x2="${w}" y1="${ys(7)}" y2="${ys(7)}" stroke="var(--naik)" stroke-dasharray="3 4" stroke-width="1"/>
+    <line x1="0" x2="${w}" y1="${ys(4)}" y2="${ys(4)}" stroke="var(--turun)" stroke-dasharray="3 4" stroke-width="1"/>
+    <polyline points="${pts}" fill="none" stroke="var(--accent)" stroke-width="2" vector-effect="non-scaling-stroke"/></svg>
+    <div class="small muted">${tglID(rows[0].tanggal)} sampai ${tglID(rows[rows.length - 1].tanggal)}. Garis putus: batas BELI (7) dan HINDARI (4).</div>`;
+}
+
+function gambarChart(d) {
+  CHARTS.forEach(c => c.remove()); CHARTS = [];
+  if (d.length < 30) { $("#c-harga").innerHTML = `<p class="small muted">Data harga belum cukup.</p>`; return; }
+  const css = getComputedStyle(document.documentElement), v = n => css.getPropertyValue(n).trim();
+  const t = d.map(x => x.tanggal), c = d.map(x => x.close);
+  const base = (id, height) => {
+    const ch = LightweightCharts.createChart($(id), {
+      height, layout: { background: { color: "transparent" }, textColor: v("--muted"), fontFamily: "Plus Jakarta Sans" },
+      grid: { vertLines: { visible: false }, horzLines: { color: v("--line") } },
+      rightPriceScale: { borderVisible: false, minimumWidth: 64 }, timeScale: { borderVisible: false, visible: id === "#c-srsi" },
+      crosshair: { mode: 0 }, handleScroll: true, handleScale: true,
+    });
+    CHARTS.push(ch); return ch;
+  };
+  const line = (ch, data, color, w = 1.5) => ch.addLineSeries({ color, lineWidth: w, priceLineVisible: false, lastValueVisible: false, crosshairMarkerVisible: false })
+    .setData(data.map((y, i) => y == null ? { time: t[i] } : { time: t[i], value: y }));
+
+  const naik = v("--naik"), turun = v("--turun");
+  const m = base("#c-harga", 300);
+  const b = bb(c);
+  line(m, b.map(x => x[0]), "rgba(47,74,196,.35)", 1); line(m, b.map(x => x[1]), "rgba(47,74,196,.35)", 1);
+  m.addCandlestickSeries({ upColor: naik, downColor: turun, borderVisible: false, wickUpColor: naik, wickDownColor: turun })
+    .setData(d.map(x => ({ time: x.tanggal, open: x.open, high: x.high, low: x.low, close: x.close })));
+  line(m, sma(c, 5), "#7CB342"); line(m, sma(c, 20), "#29B6F6"); line(m, sma(c, 100), "#5C6BC0", 2);
+
+  const vo = base("#c-vol", 90);
+  vo.addHistogramSeries({ priceFormat: { type: "volume" }, priceLineVisible: false, lastValueVisible: false })
+    .setData(d.map(x => ({ time: x.tanggal, value: x.volume, color: x.close >= x.open ? naik + "99" : turun + "99" })));
+  line(vo, sma(d.map(x => x.volume), 20), v("--accent"), 1);
+
+  const ma = base("#c-macd", 110);
+  const e12 = ema(c, 12), e26 = ema(c, 26), macd = e12.map((x, i) => x - e26[i]), sig = ema(macd, 9);
+  ma.addHistogramSeries({ priceLineVisible: false, lastValueVisible: false })
+    .setData(macd.map((x, i) => ({ time: t[i], value: x - sig[i], color: x - sig[i] >= 0 ? naik + "88" : turun + "88" })));
+  line(ma, macd, "#1E88E5"); line(ma, sig, "#C62828");
+
+  const sr = base("#c-srsi", 120);
+  const k = smaN(stochOf(rsi(c), 14), 3), dd = smaN(k, 3);
+  line(sr, k, naik); line(sr, dd, turun);
+  sr.addLineSeries({ color: "transparent", priceLineVisible: false, lastValueVisible: false })
+    .setData(t.map(x => ({ time: x, value: 50 })));
+  for (const lvl of [20, 80]) sr.addLineSeries({ color: v("--line"), lineStyle: 2, lineWidth: 1, priceLineVisible: false, lastValueVisible: false })
+    .setData(t.map(x => ({ time: x, value: lvl })));
+
+  // tampilkan ±90 hari terakhir dan sinkronkan geser/zoom
+  const from = Math.max(0, d.length - 90);
+  CHARTS.forEach(ch => ch.timeScale().setVisibleLogicalRange({ from, to: d.length + 2 }));
+  let sync = false;
+  CHARTS.forEach(src => src.timeScale().subscribeVisibleLogicalRangeChange(r => {
+    if (sync || !r) return; sync = true; CHARTS.forEach(ch => ch !== src && ch.timeScale().setVisibleLogicalRange(r)); sync = false;
+  }));
+  const ro = new ResizeObserver(() => CHARTS.forEach(ch => ch.applyOptions({ width: $("#c-harga").clientWidth })));
+  ro.observe($("#c-harga"));
+}
+
+function panelFundamental(f) {
+  const mu = (f.kuartal && f.kuartal[0] && f.kuartal[0].mata_uang) || "";
+  const p = x => x == null ? "-" : fmt(x * 100, 1) + "%";
+  const label = f.nilai == null ? "Data tidak tersedia" : f.nilai >= 7 ? "Kuat" : f.nilai >= 5.5 ? "Cukup" : f.nilai >= 4 ? "Lemah" : "Buruk";
+  return `<div class="panel"><h2>Fundamental <span class="pill">${fmt(f.nilai, 1)}/10 ${label}</span></h2>
+    <dl class="kv">
+      <dt>PER</dt><dd>${fmt(f.per, 1)}x</dd><dt>PBV</dt><dd>${fmt(f.pbv, 2)}x</dd>
+      <dt>ROE</dt><dd>${p(f.roe)}</dd><dt>DER</dt><dd>${f.der == null ? "-" : fmt(f.der / 100, 2) + "x"}</dd>
+      <dt>Margin laba bersih</dt><dd>${p(f.npm)}</dd>
+      <dt>Pendapatan tumbuh (YoY)</dt><dd class="${kelas(f.growth_pendapatan)}">${p(f.growth_pendapatan)}</dd>
+      <dt>Laba tumbuh (YoY)</dt><dd class="${kelas(f.growth_laba)}">${p(f.growth_laba)}</dd>
+    </dl>
+    ${(f.kuartal || []).length ? `<div class="scroll" style="margin-top:12px"><table><thead><tr><th>Kuartal</th><th class="r">Pendapatan</th><th class="r">Laba bersih</th></tr></thead><tbody>
+      ${f.kuartal.map(k => `<tr><td>${tglID(k.periode)}</td><td class="r">${fmt(k.pendapatan / 1e6, 1)}</td><td class="r">${fmt(k.laba / 1e6, 1)}</td></tr>`).join("")}
+      </tbody></table><div class="small muted">Dalam juta (mata uang laporan emiten${mu ? ": " + esc(mu) : ""}).</div></div>` : ""}
+    <p class="small muted" style="margin:10px 0 0">Sumber Yahoo Finance, diambil ${tglID(f.tanggal)}. Cocokkan dengan laporan resmi di idx.co.id.</p></div>`;
+}
+
+// ---------------------------------------------------------------- portofolio
+function tabelPosisi(list) {
+  let tm = 0, tp = 0;
+  const rows = list.map(p => {
+    const a = STATE.analisa.find(x => x.kode === p.kode), harga = a ? +a.close : null;
+    const modal = p.avg * p.lembar, pl = harga == null ? null : (harga - p.avg) * p.lembar;
+    tm += modal; tp += pl || 0;
+    return `<tr><td><b>${esc(p.kode)}</b>${a ? `<div class="small v-${esc(a.keputusan)}">${esc(a.keputusan)}</div>` : ""}</td>
+      <td class="r">${fmt(p.lembar / LOT)}</td><td class="r">${fmt(p.avg, 1)}</td><td class="r">${fmt(harga)}</td>
+      <td class="r">${fmt(modal)}</td><td class="r ${kelas(pl)}">${fmt(pl)}<div class="small">${pct(modal ? pl / modal * 100 : null)}</div></td></tr>`;
+  }).join("");
+  const total = list.length > 1 ? `<tr><td><b>Total</b></td><td></td><td></td><td></td><td class="r"><b>${fmt(tm)}</b></td><td class="r ${kelas(tp)}"><b>${fmt(tp)}</b><div class="small">${pct(tm ? tp / tm * 100 : null)}</div></td></tr>` : "";
+  return `<div class="scroll"><table><thead><tr><th>Saham</th><th class="r">Lot</th><th class="r">Rata-rata</th><th class="r">Harga</th><th class="r">Modal</th><th class="r">Untung/rugi</th></tr></thead><tbody>${rows}${total}</tbody></table></div>`;
+}
+
+let SIM_ID = 0;
+function tabelAvgDown(p, a) {
+  if (!a) return "";
+  const harga = +a.close, lot = p.lembar / LOT;
+  const pilihan = [...new Set([0.5, 1, 2].map(f => Math.max(1, Math.round(lot * f))))];
+  const level = [];
+  for (const [nama, h] of [["Harga sekarang", harga], ["Support", +a.support], ["Batas rugi", +a.stop_loss]]) {
+    if (!(h > 0)) continue;
+    const ada = level.find(x => x[1] === h);
+    if (ada) ada[0] += " / " + nama.toLowerCase(); else level.push([nama, h]);
+  }
+  const baris = level.map(([nama, h]) => `<tr><td>${nama}<div class="small muted">${fmt(h)}</div></td>${pilihan.map(t => {
+    const n = t * LOT, avg = (p.avg * p.lembar + h * n) / (p.lembar + n);
+    return `<td class="r"><b>${fmt(avg, 1)}</b><div class="small muted">${pct((avg / h - 1) * 100, 1)}</div><div class="small muted">${fmt(h * n * (1 + FEE_BELI) / 1e6, 2)} jt</div></td>`;
+  }).join("")}</tr>`).join("");
+  const id = "sim-" + p.kode + "-" + (++SIM_ID);
+  const peringatan = ["HINDARI", "TUNGGU"].includes(a.keputusan)
+    ? `<p class="msg" style="margin-top:10px">Keputusan teknikal hari ini <b class="v-${a.keputusan}">${a.keputusan}</b>. Menambah posisi saat tren masih turun memperbesar risiko; biasanya lebih aman menunggu harga kembali di atas MA20 (${fmt(a.ma20)}).</p>` : "";
+  setTimeout(() => {
+    const f = document.getElementById(id); if (!f) return;
+    const hitung = () => {
+      const h = +f.harga.value, t = +f.lot.value, o = f.querySelector("output");
+      if (!(h > 0 && t > 0)) { o.textContent = ""; return; }
+      const n = t * LOT, avg = (p.avg * p.lembar + h * n) / (p.lembar + n);
+      o.innerHTML = `Rata-rata baru <b>${fmt(avg, 1)}</b>, total ${fmt(lot + t)} lot, dana ±${fmt(h * n * (1 + FEE_BELI))}. Harga perlu naik ${pct((avg / h - 1) * 100, 1)} untuk impas.`;
+    };
+    f.addEventListener("input", hitung); hitung();
+  });
+  return `<h3 style="margin-top:16px">Simulasi average down</h3>
+    ${harga < p.avg ? `<p class="small" style="margin:4px 0 8px">Harga perlu naik <b>${pct((p.avg / harga - 1) * 100, 1)}</b> untuk kembali ke rata-rata ${fmt(p.avg, 1)}.</p>` : ""}
+    <div class="scroll"><table><thead><tr><th>Beli di</th>${pilihan.map(t => `<th class="r">+${t} lot</th>`).join("")}</tr></thead><tbody>${baris}</tbody></table></div>
+    <p class="small muted" style="margin:6px 0 0">Angka tebal adalah rata-rata baru, lalu kenaikan yang dibutuhkan untuk impas dan dana yang diperlukan.</p>
+    <form class="f" id="${id}" style="margin-top:12px" onsubmit="return false">
+      <label>Coba harga<input name="harga" type="number" min="1" value="${harga}" inputmode="numeric"></label>
+      <label>Tambah lot<input name="lot" type="number" min="1" value="${pilihan[0]}" inputmode="numeric"></label>
+      <output class="full small"></output>
+    </form>${peringatan}`;
+}
+
+function renderPortofolio() {
+  const el = $("#t-portofolio");
+  const pos = hitungPosisi(STATE.trx), aktif = pos.filter(p => p.lembar > 0);
+  const realized = pos.reduce((s, p) => s + p.realized, 0);
+  if (!aktif.length) {
+    el.innerHTML = `<div class="panel empty">Belum ada saham yang dipegang.<br><br><button class="btn" type="button" id="ke-catat">Catat transaksi pertama</button></div>`
+      + (realized ? `<div class="panel">Untung/rugi yang sudah terealisasi: <b class="${kelas(realized)}">${fmt(realized)}</b></div>` : "");
+    $("#ke-catat").onclick = () => buka("catat");
+    return;
+  }
+  el.innerHTML = `<div class="panel"><h2>Posisi saat ini</h2>${tabelPosisi(aktif)}
+      ${realized ? `<p class="small" style="margin:10px 0 0">Untung/rugi terealisasi dari penjualan (setelah fee): <b class="${kelas(realized)}">${fmt(realized)}</b></p>` : ""}
+      <p class="small muted" style="margin:6px 0 0">Harga memakai penutupan terakhir. Untung/rugi belum dipotong fee jual ${FEE_JUAL * 100}%.</p></div>`
+    + aktif.map(p => `<div class="panel"><h2>${esc(p.kode)}</h2>${tabelAvgDown(p, STATE.analisa.find(x => x.kode === p.kode))}</div>`).join("");
+}
+
+// ---------------------------------------------------------------- catat
+function renderCatat() {
+  const tl = $("#list-trx");
+  tl.innerHTML = STATE.trx.length ? `<table><thead><tr><th>Tanggal</th><th>Saham</th><th>Aksi</th><th class="r">Lot</th><th class="r">Harga</th><th></th></tr></thead><tbody>
+    ${[...STATE.trx].reverse().map(r => `<tr><td>${tglID(r.tanggal)}</td><td><b>${esc(r.kode)}</b></td><td class="${r.aksi === "beli" ? "naik" : "turun"}">${r.aksi === "beli" ? "Beli" : "Jual"}</td>
+      <td class="r">${fmt(r.lot)}</td><td class="r">${fmt(r.harga)}</td><td class="r"><button class="link" data-hapus="${r.id}" type="button">Hapus</button></td></tr>`).join("")}
+    </tbody></table>` : `<p class="empty">Belum ada transaksi.</p>`;
+  tl.querySelectorAll("[data-hapus]").forEach(b => b.addEventListener("click", async () => {
+    if (!confirm("Hapus transaksi ini?")) return;
+    const { error } = await sb.from("saham_transaksi").delete().eq("id", b.dataset.hapus);
+    if (error) return alert("Gagal menghapus: " + error.message);
+    await muatSemua();
+  }));
+  const wl = $("#list-watch");
+  wl.innerHTML = STATE.watch.length ? `<table><tbody>${STATE.watch.map(w => `<tr><td><b>${esc(w.kode)}</b></td>
+    <td class="small muted">${w.aktif ? "Dianalisa setiap hari" : "Dijeda"}</td>
+    <td class="r"><button class="link" style="color:var(--accent)" data-toggle="${esc(w.kode)}" data-aktif="${w.aktif}" type="button">${w.aktif ? "Jeda" : "Aktifkan"}</button></td></tr>`).join("")}</tbody></table>`
+    : `<p class="empty">Belum ada saham dipantau.</p>`;
+  wl.querySelectorAll("[data-toggle]").forEach(b => b.addEventListener("click", async () => {
+    const { error } = await sb.from("saham_watchlist").update({ aktif: b.dataset.aktif !== "true" }).eq("kode", b.dataset.toggle);
+    if (error) return alert("Gagal menyimpan: " + error.message);
+    await muatSemua();
+  }));
+}
+
+const fTrx = $("#f-trx");
+fTrx.tanggal.value = new Date().toLocaleDateString("sv-SE");
+fTrx.addEventListener("submit", async e => {
+  e.preventDefault();
+  const f = new FormData(fTrx), msg = $("#trx-msg"), b = fTrx.querySelector("button");
+  const row = { tanggal: f.get("tanggal"), kode: String(f.get("kode")).trim().toUpperCase(), aksi: f.get("aksi"), lot: +f.get("lot"), harga: +f.get("harga") };
+  if (row.aksi === "jual") {
+    const p = hitungPosisi(STATE.trx).find(x => x.kode === row.kode);
+    const punya = p ? p.lembar / LOT : 0;
+    if (row.lot > punya) { msg.className = "msg full err"; msg.textContent = `Lot ${row.kode} yang dipegang hanya ${punya}.`; msg.hidden = false; return; }
+  }
+  b.disabled = true;
+  const { error } = await sb.from("saham_transaksi").insert(row);
+  b.disabled = false;
+  msg.hidden = false;
+  if (error) { msg.className = "msg full err"; msg.textContent = "Gagal menyimpan: " + error.message; return; }
+  msg.className = "msg full";
+  msg.textContent = `Tersimpan: ${row.aksi} ${row.lot} lot ${row.kode} di ${fmt(row.harga)}.`;
+  if (!STATE.watch.some(w => w.kode === row.kode)) await sb.from("saham_watchlist").insert({ kode: row.kode });
+  fTrx.lot.value = ""; fTrx.harga.value = "";
+  await muatSemua();
+});
+
+$("#f-watch").addEventListener("submit", async e => {
+  e.preventDefault();
+  const kode = e.target.kode.value.trim().toUpperCase();
+  if (!kode) return;
+  const { error } = await sb.from("saham_watchlist").upsert({ kode, aktif: true });
+  if (error) return alert("Gagal menyimpan: " + error.message);
+  e.target.reset(); await muatSemua();
+});
+
+mulai();
+</script>
+</body>
+</html>

@@ -2,6 +2,8 @@
 
 Analisa teknikal otomatis untuk saham Bursa Efek Indonesia. Setiap hari bursa, GitHub Actions mengambil data harga dari Yahoo Finance, menghitung indikator, lalu menyimpan laporan dan grafik ke repo ini.
 
+**Dashboard:** https://ariblackheart-cyber.github.io/analisa-saham/ (login dengan akun Supabase). Berisi grafik, nilai tiap aspek, portofolio, simulasi average down, dan form catat transaksi.
+
 ## Ringkasan terbaru
 
 <!-- RINGKASAN:START -->
@@ -104,7 +106,9 @@ Semua data bisa disimpan di satu database Supabase. Semua tabel memakai awalan `
 4. Di GitHub, buka **Settings → Secrets and variables → Actions → New repository secret**, lalu tambahkan:
    - `SUPABASE_URL`
    - `SUPABASE_SERVICE_KEY` (isi dengan Secret key)
-5. (Opsional) Salin data lama: `python db.py impor-watchlist` dan `python db.py impor-transaksi`.
+5. Untuk dashboard: jalankan `supabase/002_akses_dashboard.sql` di SQL Editor, lalu daftarkan akunmu:
+   `insert into saham_pemilik (user_id) select id from auth.users where email = 'EMAIL_KAMU';`
+6. (Opsional) Salin data lama: `python db.py impor-watchlist` dan `python db.py impor-transaksi`.
 
 Setelah terpasang, watchlist dan transaksi dibaca dari Supabase. Laporan Markdown dan grafik tetap disimpan di repo.
 
@@ -137,7 +141,8 @@ transaksi.csv   catatan jual beli kamu
 fundamental.py  data laporan keuangan dan nilai fundamental
 saham.txt       daftar saham (jika tidak memakai Supabase)
 db.py           penghubung ke Supabase
-supabase/       skema database
+supabase/       skema database dan aturan akses dashboard
+docs/           dashboard web (GitHub Pages)
 reports/        laporan harian per saham
 charts/         grafik harian per saham
 ```

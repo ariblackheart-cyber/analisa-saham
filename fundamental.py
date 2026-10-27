@@ -84,7 +84,7 @@ def ambil(kode: str) -> dict:
         for tgl in list(ni.index)[:5]:
             data["kuartal"].append(dict(periode=pd.Timestamp(tgl).date(),
                                         pendapatan=rev.get(tgl) if rev is not None else None,
-                                        laba=ni.get(tgl)))
+                                        laba=ni.get(tgl), mata_uang=mu_lapor))
     # pertumbuhan YoY: kuartal terbaru vs kuartal yang sama tahun lalu (indeks 0 vs 4)
     def yoy(s):
         if s is None or len(s) < 5 or s.iloc[4] == 0:
