@@ -9,7 +9,10 @@ Analisa teknikal otomatis untuk saham Bursa Efek Indonesia. Setiap hari bursa, G
 <!-- RINGKASAN:START -->
 | Saham | Tanggal | Close | Perubahan | Tren | Volume | Stoch | Momentum | Candle | Total | Keputusan | Fundamental |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| [RAJA](reports/RAJA/latest.md) | 2026-10-27 | 474 | +0.42% | 0.0 | 5.9 | 6.5 | 4.0 | 4.6 | **4.0** | 🔴 HINDARI | 9.4 Kuat |
+| [AALI](reports/AALI/latest.md) | 2026-10-27 | 9.800 | +3.16% | 10.0 | 9.1 | 3.5 | 9.5 | 8.3 | **8.2** | 🟢 BELI | 9.2 Kuat |
+| [BBRI](reports/BBRI/latest.md) | 2026-10-27 | 2.900 | -0.34% | 2.0 | 5.8 | 5.8 | 3.0 | 7.9 | **4.6** | ⚪ TUNGGU | 8.5 Kuat |
+| [BRIS](reports/BRIS/latest.md) | 2026-10-27 | 1.050 | -0.47% | 2.0 | 0.4 | 6.5 | 4.0 | 4.3 | **3.3** | 🔴 HINDARI | 9.7 Kuat |
+| [RAJA](reports/RAJA/latest.md) | 2026-10-27 | 452 | -4.24% | 0.0 | 3.7 | 5.0 | 4.0 | 4.4 | **3.2** | 🔴 HINDARI | 9.4 Kuat |
 <!-- RINGKASAN:END -->
 
 ## Rekomendasi teknikal
@@ -19,16 +22,16 @@ Analisa teknikal otomatis untuk saham Bursa Efek Indonesia. Setiap hari bursa, G
 
 | # | Saham | Close | Perubahan | Total | Keputusan | Tren | Volume | Stoch | Momentum | Candle |
 |---|---|---|---|---|---|---|---|---|---|---|
-| 1 | **AALI** | 9.775 | +2.89% | **8.5** | 🟢 BELI | 10.0 | 7.2 | 5.8 | 9.5 | 10.0 |
-| 2 | **AADI** | 11.800 | +2.39% | **8.1** | 🟢 BELI | 10.0 | 7.9 | 6.5 | 9.5 | 5.2 |
-| 3 | **PWON** | 292 | +2.82% | **8.0** | 🟢 BELI | 10.0 | 8.0 | 5.8 | 9.5 | 5.8 |
-| 4 | **CTRA** | 585 | +1.74% | **7.6** | 🟢 BELI | 10.0 | 6.7 | 5.0 | 7.5 | 8.5 |
-| 5 | **UNTR** | 25.750 | +3.00% | **7.4** | 🟢 BELI | 10.0 | 5.9 | 5.0 | 7.5 | 8.4 |
-| 6 | **INTP** | 5.725 | +1.78% | **7.3** | 🟢 BELI | 10.0 | 7.1 | 2.0 | 9.5 | 7.3 |
-| 7 | **AKRA** | 1.460 | +4.29% | **7.1** | 🟢 BELI | 8.0 | 7.8 | 5.8 | 7.5 | 6.0 |
-| 8 | **ADRO** | 2.490 | +1.63% | **7.1** | 🟢 BELI | 8.0 | 6.6 | 5.8 | 7.5 | 7.4 |
-| 9 | **ELSA** | 660 | +3.12% | **7.1** | 🟢 BELI | 8.0 | 6.5 | 5.8 | 7.5 | 7.4 |
-| 10 | **JSMR** | 2.800 | +3.70% | **7.0** | 🟢 BELI | 8.0 | 8.1 | 5.0 | 7.5 | 6.2 |
+| 1 | **PWON** | 294 | +3.52% | **8.5** | 🟢 BELI | 10.0 | 9.7 | 5.8 | 9.5 | 6.5 |
+| 2 | **AALI** | 9.800 | +3.16% | **8.2** | 🟢 BELI | 10.0 | 9.1 | 3.5 | 9.5 | 8.3 |
+| 3 | **UNTR** | 26.500 | +6.00% | **8.1** | 🟢 BELI | 10.0 | 7.3 | 5.0 | 9.5 | 8.5 |
+| 4 | **INTP** | 5.950 | +5.78% | **8.1** | 🟢 BELI | 10.0 | 9.7 | 4.2 | 7.5 | 8.5 |
+| 5 | **AADI** | 11.700 | +1.52% | **8.1** | 🟢 BELI | 10.0 | 9.6 | 6.5 | 9.5 | 2.9 |
+| 6 | **CTRA** | 585 | +1.74% | **7.9** | 🟢 BELI | 10.0 | 8.8 | 5.0 | 7.5 | 7.8 |
+| 7 | **AKRA** | 1.435 | +2.50% | **7.5** | 🟢 BELI | 8.0 | 10.0 | 5.8 | 7.5 | 5.6 |
+| 8 | **JSMR** | 2.850 | +5.56% | **7.4** | 🟢 BELI | 8.0 | 9.9 | 5.0 | 7.5 | 6.2 |
+| 9 | **HMSP** | 675 | +5.47% | **7.4** | 🟢 BELI | 7.0 | 8.9 | 4.2 | 7.5 | 10.0 |
+| 10 | **DSNG** | 1.470 | +5.00% | **7.2** | 🟢 BELI | 8.0 | 6.6 | 5.8 | 7.5 | 8.5 |
 <!-- REKOMENDASI:END -->
 
 Setiap hari bursa, semua saham di `universe.txt` (±85 saham likuid) dinilai dengan aturan yang sama. Saham dengan rata-rata transaksi di bawah Rp 5 miliar/hari dilewati. Daftar lengkap dan alasannya ada di tab **Rekomendasi** di dashboard. Ubah daftar saham di `universe.txt` dan batas likuiditas di `screener.py`.

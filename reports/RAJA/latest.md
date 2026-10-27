@@ -6,68 +6,69 @@
 
 | Open | High | Low | Close | Perubahan | Volume |
 |---|---|---|---|---|---|
-| 472 | 494 | 472 | **474** | +2 (+0.42%) | 34.555.400 |
+| 472 | 494 | 440 | **452** | -20 (-4.24%) | 85.657.700 |
 
-### 🔴 Keputusan teknikal: **HINDARI** — nilai total **4.0/10**
+### 🔴 Keputusan teknikal: **HINDARI** — nilai total **3.2/10**
 
 Mayoritas indikator searah turun. Bagi yang memegang, pertimbangkan batas rugi.
 
 | Aspek | Nilai | |
 |---|---|---|
 | Tren | **0.0**/10 | `░░░░░░░░░░` |
-| Volume | **5.9**/10 | `██████░░░░` |
-| Stochastic | **6.5**/10 | `██████░░░░` |
+| Volume | **3.7**/10 | `████░░░░░░` |
+| Stochastic | **5.0**/10 | `█████░░░░░` |
 | Momentum | **4.0**/10 | `████░░░░░░` |
-| Candle | **4.6**/10 | `█████░░░░░` |
+| Candle | **4.4**/10 | `████░░░░░░` |
 
 **Level harga (otomatis):**
 
 - Support 20 hari: 426 · Resistance 20 hari: 710
 - Batas rugi (stop loss): 426 (di bawah support atau −5%)
-- Target 1: 575 · Target 2: 710
-- Rasio untung : rugi ke target 1 = 2.11 : 1
+- Target 1: 574 · Target 2: 710
+- Rasio untung : rugi ke target 1 = 4.70 : 1
 
 ## 1. Candlestick
 
-Candle hijau (ditutup naik). Badan 9% dari rentang hari ini, sumbu atas 91%, sumbu bawah 0%.
+Candle merah (ditutup turun). Badan 37% dari rentang hari ini, sumbu atas 41%, sumbu bawah 22%.
 
-- ⚪ **Gravestone doji** — Badan sangat kecil dengan sumbu atas panjang: pembeli sempat mendorong, tetapi penjual mengembalikan harga.
+- Tidak ada pola candle khusus yang terdeteksi.
 
 ## 2. Volume
 
-- Volume hari ini 34.555.400 lembar, rata-rata 20 hari 66.298.220 (**0.52x** rata-rata).
-- Volume sepi: pergerakan hari ini kurang meyakinkan.
-- 5 hari terakhir: volume candle hijau 60%, candle merah 40%.
+- Volume hari ini 85.657.700 lembar, rata-rata 20 hari 68.853.335 (**1.24x** rata-rata).
+- Volume normal.
+- 5 hari terakhir: volume candle hijau 48%, candle merah 52%.
 
 ## 3. Stochastic & Stoch RSI
 
-- Stochastic (14,3,3): %K 20.7, %D 20.4, zona **tengah**.
-- Stoch RSI (14,14,3,3): K 57.5, D 49.3, zona **tengah**.
+- Stochastic (14,3,3): %K 17.8, %D 19.5, zona **jenuh jual (oversold)**.
+- %K memotong %D ke bawah.
+- Stoch RSI (14,14,3,3): K 53.2, D 47.9, zona **tengah**.
 - K di atas D: momentum masih naik.
 
 ## 4. Tren (Moving Average)
 
-Tren jangka pendek: **turun** (MA20 berubah -49 dalam 5 hari).
-- Harga di bawah MA5 (479).
-- Harga di bawah MA20 (575).
+Tren jangka pendek: **turun** (MA20 berubah -50 dalam 5 hari).
+- Harga di bawah MA5 (474).
+- Harga di bawah MA20 (574).
 - Harga di bawah MA100 (760).
 
 ## 5. Bollinger Bands
 
-- Bollinger (20,2): atas 745, tengah 575, bawah 405. Posisi harga 20% dari pita bawah ke atas, lebar pita 59.0%.
+- Bollinger (20,2): atas 747, tengah 574, bawah 401. Posisi harga 15% dari pita bawah ke atas, lebar pita 60.2%.
 
 ## 6. MACD & RSI
 
-- MACD (12,26,9): garis -68.68, sinyal -63.84, histogram -4.84.
+- MACD (12,26,9): garis -70.43, sinyal -64.19, histogram -6.24.
 - Histogram membaik dibanding kemarin: tekanan turun berkurang / tekanan naik bertambah.
 - MACD masih di bawah nol: tren menengah masih lemah.
-- RSI (14): 28.6 — oversold.
+- RSI (14): 26.4 — oversold.
 
 ## 7. Support & Resistance
 
 - Support 20 hari (low terendah): 426.
 - Resistance 20 hari (high tertinggi): 710.
-- Resistance terdekat lain: MA20 575, MA100 760.
+- Resistance terdekat lain: MA20 574, MA100 760.
 
 ## 8. Fundamental (laporan keuangan)
 
@@ -75,9 +76,9 @@ Tren jangka pendek: **turun** (MA20 berubah -49 dalam 5 hari).
 
 | PER | PBV | ROE | DER | Margin laba | Pendapatan YoY | Laba YoY | Kapitalisasi |
 |---|---|---|---|---|---|---|---|
-| 16.3 | 2.61 | 19.9% | 1.13x | 14.3% | 23.4% | 205.1% | 10.02 T |
+| 14.6 | 2.49 | 19.9% | 1.13x | 14.3% | 23.4% | 205.1% | 9.55 T |
 
-Laporan keuangan emiten ini disajikan dalam **USD**. PBV dihitung ulang dengan kurs USD/IDR 18.136.
+Laporan keuangan emiten ini disajikan dalam **USD**. PBV dihitung ulang dengan kurs USD/IDR 18.145.
 
 Laporan laba rugi per kuartal (juta USD):
 
@@ -91,7 +92,7 @@ Laporan laba rugi per kuartal (juta USD):
 
 | Kondisi | Poin |
 |---|---|
-| PER 16.3x: wajar | +0.25 |
+| PER 14.6x: wajar | +0.25 |
 | ROE 20%: sangat efisien | +1.25 |
 | Margin laba bersih 14%: sehat | +0.50 |
 | Pendapatan tumbuh +23% YoY | +0.93 |
@@ -112,18 +113,19 @@ Setiap aspek mulai dari **5** (netral), lalu ditambah atau dikurangi poin di baw
 | Harga di bawah MA100 | -1.50 |
 | MA20 menurun dalam 5 hari | -1.00 |
 
-**Volume: 5.9/10** (bobot 20%)
+**Volume: 3.7/10** (bobot 20%)
 
 | Kondisi | Poin |
 |---|---|
-| Harga naik dengan volume 0.52x rata-rata 20 hari | +0.52 |
-| Volume hijau 5 hari 60% (akumulasi vs distribusi) | +0.41 |
+| Harga turun dengan volume 1.24x rata-rata 20 hari | -1.24 |
+| Volume hijau 5 hari 48% (akumulasi vs distribusi) | -0.10 |
 
-**Stochastic: 6.5/10** (bobot 20%)
+**Stochastic: 5.0/10** (bobot 20%)
 
 | Kondisi | Poin |
 |---|---|
-| Stochastic: K di atas D | +0.75 |
+| Stochastic: K memotong D ke bawah | -1.50 |
+| Stochastic oversold (18): peluang pantulan | +0.75 |
 | Stoch RSI: K di atas D | +0.75 |
 
 **Momentum: 4.0/10** (bobot 20%)
@@ -133,14 +135,13 @@ Setiap aspek mulai dari **5** (netral), lalu ditambah atau dikurangi poin di baw
 | MACD di bawah garis sinyal | -1.50 |
 | MACD di bawah nol | -1.00 |
 | Histogram MACD membaik | +1.00 |
-| RSI 29 oversold, peluang pantulan | +0.50 |
+| RSI 26 oversold, peluang pantulan | +0.50 |
 
-**Candle: 4.6/10** (bobot 15%)
+**Candle: 4.4/10** (bobot 15%)
 
 | Kondisi | Poin |
 |---|---|
-| Badan candle hijau 9% dari rentang | +0.14 |
-| Sumbu atas lebih panjang: ada penolakan harga tinggi | -0.50 |
+| Badan candle merah 37% dari rentang | -0.56 |
 
 
 _Laporan ini dibuat otomatis dari aturan teknikal sederhana. Bukan rekomendasi beli atau jual; selalu kombinasikan dengan analisa sendiri dan manajemen risiko._
