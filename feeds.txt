@@ -1,5 +1,6 @@
 # Feed RSS berita pasar modal yang diambil setiap 3 jam. Satu URL per baris; baris # diabaikan.
-# Nama sumber diambil dari judul feed.
-https://www.cnbcindonesia.com/market/rss
+# Nama sumber diambil dari judul feed. Hanya feed yang mengizinkan pembacaan otomatis dari server.
+# (CNBC Indonesia dan IDX Channel menolak akses dari server GitHub, jadi tidak dipakai.)
 https://www.antaranews.com/rss/ekonomi-bursa.xml
-https://www.idxchannel.com/rss
+https://finance.detik.com/rss
+https://feed.liputan6.com/rss/bisnis

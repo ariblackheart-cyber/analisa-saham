@@ -1032,7 +1032,7 @@ async function renderBerita() {
   el.innerHTML = `<p class="small muted" style="margin:10px 0 0">Memuat…</p>`;
   const rows = await cariBerita(kata, 7);
   el.innerHTML = daftarBerita(rows.slice(0, 30), kata
-    ? `Belum ada berita 7 hari terakhir yang memuat "${esc(kata)}". Berita diambil setiap 3 jam dari CNBC Indonesia, Antara, dan IDX Channel.`
+    ? `Belum ada berita 7 hari terakhir yang memuat "${esc(kata)}". Berita diambil setiap 3 jam dari Antara, detikFinance, dan Liputan6 Bisnis.`
     : `Belum ada berita yang cocok dengan kata kunci. Berita diambil setiap 3 jam.`);
 }
 let tBerita;

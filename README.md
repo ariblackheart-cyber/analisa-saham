@@ -39,7 +39,7 @@ Data beli/jual asing tidak tersedia di Yahoo Finance, dan situs BEI menolak akse
 
 ## Berita
 
-Setiap 3 jam, workflow **Berita** mengambil berita dari feed RSS di `feeds.txt` (CNBC Indonesia Market, Antara Ekonomi Bursa, IDX Channel) dan menyimpannya 30 hari. Di dashboard, berita bisa dicari dengan kata kunci; kode saham yang dipantau otomatis jadi kata kunci, dan kata kunci lain (misalnya nikel atau suku bunga) bisa ditambahkan di tab **Catat**. Halaman detail saham menampilkan berita yang menyebut kode saham itu.
+Setiap 3 jam, workflow **Berita** mengambil berita dari feed RSS di `feeds.txt` (Antara Ekonomi Bursa, detikFinance, Liputan6 Bisnis) dan menyimpannya 30 hari. Di dashboard, berita bisa dicari dengan kata kunci; kode saham yang dipantau otomatis jadi kata kunci, dan kata kunci lain (misalnya nikel atau suku bunga) bisa ditambahkan di tab **Catat**. Halaman detail saham menampilkan berita yang menyebut kode saham itu.
 
 ## Portofolio saya
 
