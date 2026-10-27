@@ -71,8 +71,8 @@ h3 { font-size: 15px; font-weight: 700; }
 /* tabs (bottom on mobile) */
 .tabs { position: fixed; left: 0; right: 0; bottom: 0; z-index: 6; background: var(--surface);
   border-top: 1px solid var(--line); padding-bottom: env(safe-area-inset-bottom); }
-.tabs .wrap { display: grid; grid-template-columns: repeat(3, 1fr); }
-.tabs button { background: none; border: 0; padding: 14px 4px; font-weight: 600; color: var(--muted); cursor: pointer; }
+.tabs .wrap { display: grid; grid-template-columns: repeat(4, 1fr); padding: 0 4px; }
+.tabs button { background: none; border: 0; padding: 14px 2px; font-weight: 600; font-size: 13px; color: var(--muted); cursor: pointer; }
 .tabs button[aria-selected="true"] { color: var(--accent); box-shadow: inset 0 3px 0 var(--accent); }
 @media (min-width: 760px) {
   body { padding-bottom: 24px; }
@@ -148,6 +148,8 @@ form.f { display: grid; gap: 10px; grid-template-columns: 1fr 1fr; }
 form.f label { display: grid; gap: 4px; font-size: 13px; color: var(--muted); }
 form.f .full { grid-column: 1 / -1; }
 input, select { background: var(--surface-2); border: 1px solid var(--line); border-radius: var(--radius-sm); padding: 10px 12px; width: 100%; color: var(--ink); }
+.seg3 { grid-template-columns: 1fr 1.4fr 1fr !important; }
+.rek-aksi { grid-column: 1 / -1; display: flex; gap: 8px; align-items: center; justify-content: space-between; margin-top: 10px; flex-wrap: wrap; }
 .seg { display: grid; grid-template-columns: 1fr 1fr; border: 1px solid var(--line); border-radius: var(--radius-sm); overflow: hidden; }
 .seg input { position: absolute; opacity: 0; pointer-events: none; }
 .seg label { text-align: center; padding: 10px; cursor: pointer; color: var(--ink); font-weight: 600; font-size: 14px; }
@@ -196,7 +198,8 @@ input, select { background: var(--surface-2); border: 1px solid var(--line); bor
 
   <nav class="tabs" role="tablist" aria-label="Halaman">
     <div class="wrap">
-      <button role="tab" data-tab="ringkasan" aria-selected="true">Ringkasan</button>
+      <button role="tab" data-tab="ringkasan" aria-selected="true">Pantauan</button>
+      <button role="tab" data-tab="rekomendasi" aria-selected="false">Rekomendasi</button>
       <button role="tab" data-tab="portofolio" aria-selected="false">Portofolio</button>
       <button role="tab" data-tab="catat" aria-selected="false">Catat</button>
     </div>
@@ -214,6 +217,20 @@ input, select { background: var(--surface-2); border: 1px solid var(--line); bor
     </section>
 
     <section class="view" id="t-detail" hidden></section>
+
+    <section class="view" id="t-rekomendasi" hidden>
+      <div class="panel">
+        <h2>Rekomendasi teknikal</h2>
+        <p class="small muted" style="margin:6px 0 12px" id="rek-info">Saham likuid dengan nilai teknikal tertinggi, dipindai setiap hari bursa.</p>
+        <div class="seg seg3" role="radiogroup" aria-label="Saring keputusan">
+          <label><input type="radio" name="rek" value="BELI"><span>BELI</span></label>
+          <label><input type="radio" name="rek" value="BELI,PANTAU" checked><span>BELI + PANTAU</span></label>
+          <label><input type="radio" name="rek" value=""><span>Semua</span></label>
+        </div>
+      </div>
+      <div class="saham-list" id="list-rek"></div>
+      <p class="small muted" style="margin:0">Hasil aturan teknikal mekanis, bukan rekomendasi investasi. Tidak memperhitungkan berita, fundamental, atau kondisi pasar. Selalu gunakan batas rugi.</p>
+    </section>
 
     <section class="view" id="t-portofolio" hidden></section>
 
@@ -324,10 +341,61 @@ document.querySelectorAll(".tabs button").forEach(b => b.addEventListener("click
 function buka(tab) {
   STATE.tab = tab;
   document.querySelectorAll(".tabs button").forEach(b => b.setAttribute("aria-selected", b.dataset.tab === tab));
-  for (const id of ["ringkasan", "portofolio", "catat", "detail"]) $("#t-" + id).hidden = id !== tab;
+  for (const id of ["ringkasan", "rekomendasi", "portofolio", "catat", "detail"]) $("#t-" + id).hidden = id !== tab;
+  if (tab === "rekomendasi" && !STATE.rek) muatRekomendasi();
   window.scrollTo(0, 0);
 }
-function render() { renderRingkasan(); renderPortofolio(); renderCatat(); }
+function render() { renderRingkasan(); renderPortofolio(); renderCatat(); if (STATE.rek) renderRekomendasi(); }
+
+// ---------------------------------------------------------------- rekomendasi
+async function muatRekomendasi() {
+  $("#list-rek").innerHTML = `<div class="panel empty">Memuat…</div>`;
+  const last = await sb.from("saham_screener").select("tanggal").order("tanggal", { ascending: false }).limit(1);
+  const tgl = last.data && last.data[0] && last.data[0].tanggal;
+  if (!tgl) { STATE.rek = { tgl: null, rows: [] }; return renderRekomendasi(); }
+  const r = await sb.from("saham_screener").select("*").eq("tanggal", tgl).order("nilai_total", { ascending: false });
+  STATE.rek = { tgl, rows: r.data || [] };
+  renderRekomendasi();
+}
+document.querySelectorAll('input[name="rek"]').forEach(i => i.addEventListener("change", renderRekomendasi));
+function renderRekomendasi() {
+  const el = $("#list-rek"), { tgl, rows } = STATE.rek;
+  if (!tgl) { el.innerHTML = `<div class="panel empty">Belum ada hasil pemindaian. Hasil pertama muncul setelah run harian berikutnya.</div>`; return; }
+  const pilih = document.querySelector('input[name="rek"]:checked').value.split(",").filter(Boolean);
+  const tampil = rows.filter(r => !pilih.length || pilih.includes(r.keputusan));
+  $("#rek-info").textContent = `${rows.length} saham likuid dipindai pada penutupan ${tglID(tgl)}, diurutkan dari nilai tertinggi.`;
+  if (!tampil.length) { el.innerHTML = `<div class="panel empty">Hari ini tidak ada saham dengan keputusan ${pilih.join(" atau ")}. Coba pilihan "Semua".</div>`; return; }
+  el.innerHTML = tampil.map(r => {
+    const dipantau = STATE.watch.some(w => w.kode === r.kode && w.aktif);
+    const adaDetail = STATE.analisa.some(a => a.kode === r.kode);
+    return `<div class="saham" style="cursor:default">
+      <div>
+        <div class="kode">${esc(r.kode)}</div>
+        <div class="harga">${fmt(r.close)} <span class="${kelas(r.perubahan_pct)}">${pct(r.perubahan_pct)}</span></div>
+      </div>
+      <div class="verdict">
+        <div class="skor">${fmt(r.nilai_total, 1)}<small>/10</small></div>
+        <div class="kata v-${esc(r.keputusan)}">${esc(r.keputusan)}</div>
+      </div>
+      <div class="small muted">${(r.pola_candle || []).map(esc).join(", ") || "Tidak ada pola candle khusus"}</div>
+      <div class="strip">${ASPEK.map(([k, n]) => `<div><i><b style="width:${r[k] * 10}%;background:${warnaNilai(r[k])}"></b></i>${n}<b>${fmt(r[k], 1)}</b></div>`).join("")}</div>
+      ${ringkasAlasan(r)}
+      <div class="rek-aksi">
+        <span class="small muted">Transaksi rata-rata Rp ${fmt(r.nilai_transaksi / 1e9, 1)} M/hari, batas rugi ${fmt(r.stop_loss)}, target ${fmt(r.target1)}</span>
+        ${adaDetail ? `<button class="btn ghost" type="button" data-detail="${esc(r.kode)}">Lihat detail</button>`
+          : dipantau ? `<span class="pill">Dipantau, detail muncul di run berikutnya</span>`
+          : `<button class="btn" type="button" data-pantau="${esc(r.kode)}">Pantau ${esc(r.kode)}</button>`}
+      </div>
+    </div>`;
+  }).join("");
+  el.querySelectorAll("[data-detail]").forEach(b => b.onclick = () => bukaDetail(b.dataset.detail));
+  el.querySelectorAll("[data-pantau]").forEach(b => b.onclick = async () => {
+    b.disabled = true;
+    const { error } = await sb.from("saham_watchlist").upsert({ kode: b.dataset.pantau, aktif: true });
+    if (error) { b.disabled = false; return alert("Gagal menambahkan: " + error.message); }
+    await muatSemua();
+  });
+}
 
 // ---------------------------------------------------------------- ringkasan
 function renderRingkasan() {
@@ -436,9 +504,10 @@ let CHARTS = [];
 async function bukaDetail(kode) {
   const r = STATE.analisa.find(x => x.kode === kode);
   const el = $("#t-detail");
+  if (STATE.tab !== "detail") STATE.asal = STATE.tab;
   buka("detail");
-  el.innerHTML = `<button class="back" type="button" id="btn-back">Kembali ke ringkasan</button><div class="panel empty">Memuat ${esc(kode)}…</div>`;
-  $("#btn-back").onclick = () => buka("ringkasan");
+  el.innerHTML = `<button class="back" type="button" id="btn-back">Kembali</button><div class="panel empty">Memuat ${esc(kode)}…</div>`;
+  $("#btn-back").onclick = () => buka(STATE.asal || "ringkasan");
   const [h, hist, f] = await Promise.all([
     sb.from("saham_harga_harian").select("tanggal,open,high,low,close,volume").eq("kode", kode).order("tanggal").limit(1000),
     sb.from("saham_analisa_harian").select("tanggal,nilai_total,keputusan").eq("kode", kode).order("tanggal").limit(365),
@@ -449,7 +518,7 @@ async function bukaDetail(kode) {
   const pos = hitungPosisi(STATE.trx).find(p => p.kode === kode && p.lembar > 0);
 
   el.innerHTML = `
-    <button class="back" type="button" id="btn-back">Kembali ke ringkasan</button>
+    <button class="back" type="button" id="btn-back">Kembali</button>
     <div class="detail-head">
       <div>
         <div class="kode">${esc(kode)}</div>
@@ -500,7 +569,7 @@ async function bukaDetail(kode) {
 
     ${fund ? panelFundamental(fund) : ""}
     <p class="small muted">Keputusan berasal dari aturan teknikal mekanis, bukan rekomendasi. Selalu gunakan batas rugi.</p>`;
-  $("#btn-back").onclick = () => buka("ringkasan");
+  $("#btn-back").onclick = () => buka(STATE.asal || "ringkasan");
   gambarChart(harga);
 }
 

@@ -12,6 +12,14 @@ Analisa teknikal otomatis untuk saham Bursa Efek Indonesia. Setiap hari bursa, G
 | [RAJA](reports/RAJA/latest.md) | 2026-10-26 | 472 | -5.60% | 0.0 | 4.4 | 6.5 | 4.0 | 1.6 | **3.2** | 🔴 HINDARI | 9.4 Kuat |
 <!-- RINGKASAN:END -->
 
+## Rekomendasi teknikal
+
+<!-- REKOMENDASI:START -->
+_Muncul setelah pemindaian harian pertama._
+<!-- REKOMENDASI:END -->
+
+Setiap hari bursa, semua saham di `universe.txt` (±85 saham likuid) dinilai dengan aturan yang sama. Saham dengan rata-rata transaksi di bawah Rp 5 miliar/hari dilewati. Daftar lengkap dan alasannya ada di tab **Rekomendasi** di dashboard. Ubah daftar saham di `universe.txt` dan batas likuiditas di `screener.py`.
+
 ## Portofolio saya
 
 <!-- PORTOFOLIO:START -->
@@ -96,6 +104,7 @@ Semua data bisa disimpan di satu database Supabase. Semua tabel memakai awalan `
 | `saham_analisa_harian` | Nilai tiap aspek, keputusan, indikator, level harga, dan rincian poin, per saham per hari |
 | `saham_fundamental` | PER, PBV, ROE, DER, pertumbuhan, nilai fundamental, laba rugi per kuartal |
 | `saham_analisa_terbaru` (view) | Analisa terakhir tiap saham |
+| `saham_screener` | Hasil pemindaian harian untuk tab Rekomendasi |
 | `saham_posisi` (view) | Lot, harga rata-rata, modal, untung/rugi, dan keputusan hari ini untuk saham yang dipegang |
 
 **Cara memasang:**
@@ -106,7 +115,7 @@ Semua data bisa disimpan di satu database Supabase. Semua tabel memakai awalan `
 4. Di GitHub, buka **Settings → Secrets and variables → Actions → New repository secret**, lalu tambahkan:
    - `SUPABASE_URL`
    - `SUPABASE_SERVICE_KEY` (isi dengan Secret key)
-5. Untuk dashboard: jalankan `supabase/002_akses_dashboard.sql` di SQL Editor, lalu daftarkan akunmu:
+5. Untuk dashboard: jalankan `supabase/002_akses_dashboard.sql` lalu `supabase/003_screener.sql` di SQL Editor, lalu daftarkan akunmu:
    (ganti `EMAIL_KAMU` di baris terakhir file dengan email akun Supabase kamu).
 6. (Opsional) Salin data lama: `python db.py impor-watchlist` dan `python db.py impor-transaksi`.
 
@@ -141,6 +150,8 @@ transaksi.csv   catatan jual beli kamu
 fundamental.py  data laporan keuangan dan nilai fundamental
 saham.txt       daftar saham (jika tidak memakai Supabase)
 db.py           penghubung ke Supabase
+screener.py     pemindai harian untuk tab Rekomendasi
+universe.txt    daftar saham yang dipindai
 supabase/       skema database dan aturan akses dashboard
 docs/           dashboard web (GitHub Pages)
 reports/        laporan harian per saham

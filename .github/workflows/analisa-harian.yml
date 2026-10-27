@@ -36,6 +36,14 @@ jobs:
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
         run: python analisa.py ${{ github.event.inputs.kode }}
 
+      - name: Pindai rekomendasi
+        # Tidak menggagalkan workflow; analisa watchlist tetap tersimpan walau pemindaian gagal.
+        continue-on-error: true
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: python screener.py
+
       - name: Simpan hasil ke repo
         run: |
           git config user.name "github-actions[bot]"
