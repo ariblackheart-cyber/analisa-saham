@@ -80,7 +80,7 @@ Saham yang sedang dipegang otomatis ikut dianalisa. Untuk setiap posisi, laporan
 
 Fee default: beli 0,15%, jual 0,25%. Ubah di `portofolio.py` sesuai sekuritas kamu.
 
-> ⚠️ Kalau repo ini **public**, isi `transaksi.csv` dan portofolio kamu bisa dilihat siapa saja. Jadikan repo **private** jika tidak ingin itu terjadi. GitHub Actions tetap gratis untuk pemakaian sebesar ini.
+> ⚠️ Tanpa Supabase, posisi dari `transaksi.csv` ditulis ke README dan laporan. Jika repo public, jangan isi `transaksi.csv`, dan gunakan Supabase saja. Dengan Supabase, posisi dan transaksi **tidak pernah ditulis ke repo**, sehingga repo aman dibuat public.
 
 ## Database Supabase (opsional)
 
@@ -108,7 +108,7 @@ Semua data bisa disimpan di satu database Supabase. Semua tabel memakai awalan `
 
 Setelah terpasang, watchlist dan transaksi dibaca dari Supabase. Laporan Markdown dan grafik tetap disimpan di repo.
 
-> 🔒 **Secret key** punya akses penuh ke database. Simpan hanya di GitHub Secrets, jangan ditulis di file mana pun. Semua tabel memakai Row Level Security tanpa akses publik, jadi isi database tidak bisa dibaca orang lain. Namun ringkasan portofolio di README dan bagian posisi di laporan tetap ditulis ke repo, jadi tetap gunakan repo **private** jika tidak ingin posisi kamu terlihat.
+> 🔒 **Secret key** punya akses penuh ke database. Simpan hanya di GitHub Secrets, jangan ditulis di file mana pun. Semua tabel memakai Row Level Security tanpa akses publik, jadi isi database tidak bisa dibaca orang lain. Dalam mode Supabase, posisi, transaksi, dan untung/rugi tidak ditulis ke README maupun laporan.
 
 ## Cara pakai
 

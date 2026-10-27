@@ -437,7 +437,9 @@ def update_readme(semua: list[dict]):
         port.append(f"| [{h['kode']}](reports/{h['kode']}/latest.md) | {p['lot']} | {num(p['avg'], 1)} | "
                     f"{rp(h['t']['Close'])} | {rp(v['modal'])} | {'🟢' if v['kotor'] >= 0 else '🔴'} "
                     f"{rp(v['kotor'])} ({v['persen']:+.2f}%) | {IKON[h['nilai']['label']]} {h['nilai']['label']} |")
-    if len(port) > 2:
+    if db.aktif():
+        port = ["_Portofolio tidak ditampilkan di repo. Lihat di dashboard (perlu login)._"]
+    elif len(port) > 2:
         port.append(f"| **Total** | | | | **{rp(tot_modal)}** | **{rp(tot_pl)} "
                     f"({(tot_pl / tot_modal * 100 if tot_modal else 0):+.2f}%)** | |")
     else:
@@ -490,7 +492,9 @@ def main():
                 except Exception as e:
                     print(f"[{kode}] data fundamental gagal: {e}", file=sys.stderr)
             h["fund_nilai"], h["fund_rincian"] = fund.nilai(h["fund"]) if h["fund"] else (None, [])
-            h["posisi"] = porto.posisi(trx, kode)
+            # Mode Supabase: posisi pribadi tidak ditulis ke repo (repo bisa public);
+            # posisi hanya tampil di dashboard setelah login.
+            h["posisi"] = None if sb else porto.posisi(trx, kode)
         except Exception as e:  # lanjut ke saham lain
             gagal.append(kode)
             print(f"[{kode}] gagal: {e}", file=sys.stderr)
