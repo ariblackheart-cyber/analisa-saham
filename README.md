@@ -98,15 +98,15 @@ Semua data bisa disimpan di satu database Supabase. Semua tabel memakai awalan `
 
 1. Buat project di [supabase.com](https://supabase.com) (paket gratis cukup).
 2. Buka **SQL Editor**, tempel isi `supabase/schema.sql`, lalu klik **Run**.
-3. Buka **Project Settings → API**, lalu salin **Project URL** dan **service_role key**.
+3. Buka **Project Settings → API Keys**, lalu salin **Secret key** (diawali `sb_secret_`). Jangan gunakan *publishable key*. Project URL ada di **Project Settings → Data API**.
 4. Di GitHub, buka **Settings → Secrets and variables → Actions → New repository secret**, lalu tambahkan:
    - `SUPABASE_URL`
-   - `SUPABASE_SERVICE_KEY` (isi dengan service_role key)
+   - `SUPABASE_SERVICE_KEY` (isi dengan Secret key)
 5. (Opsional) Salin data lama: `python db.py impor-watchlist` dan `python db.py impor-transaksi`.
 
 Setelah terpasang, watchlist dan transaksi dibaca dari Supabase. Laporan Markdown dan grafik tetap disimpan di repo.
 
-> 🔒 **service_role key** punya akses penuh ke database. Simpan hanya di GitHub Secrets, jangan ditulis di file mana pun. Semua tabel memakai Row Level Security tanpa akses publik, jadi isi database tidak bisa dibaca orang lain. Namun ringkasan portofolio di README dan bagian posisi di laporan tetap ditulis ke repo, jadi tetap gunakan repo **private** jika tidak ingin posisi kamu terlihat.
+> 🔒 **Secret key** punya akses penuh ke database. Simpan hanya di GitHub Secrets, jangan ditulis di file mana pun. Semua tabel memakai Row Level Security tanpa akses publik, jadi isi database tidak bisa dibaca orang lain. Namun ringkasan portofolio di README dan bagian posisi di laporan tetap ditulis ke repo, jadi tetap gunakan repo **private** jika tidak ingin posisi kamu terlihat.
 
 ## Cara pakai
 

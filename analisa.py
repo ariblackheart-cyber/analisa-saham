@@ -451,6 +451,9 @@ def main():
         print("Memakai database Supabase.")
         kode_list = [k.upper() for k in a.kode] or sb.watchlist()
         trx = sb.transaksi()
+        if not kode_list and trx.empty:
+            sys.exit("Tabel saham_watchlist kosong (atau tidak bisa dibaca). Tambahkan kode saham di "
+                     "Supabase, lalu pastikan SUPABASE_SERVICE_KEY berisi Secret key.")
     else:
         kode_list = [k.upper() for k in a.kode] or [
             s.strip().upper() for s in (ROOT / "saham.txt").read_text().splitlines()

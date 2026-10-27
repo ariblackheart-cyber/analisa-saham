@@ -2,7 +2,9 @@
 
 Aktif jika environment variable berikut diisi:
     SUPABASE_URL          contoh: https://abcd1234.supabase.co
-    SUPABASE_SERVICE_KEY  service_role key (Project Settings → API). RAHASIA, jangan di-commit.
+    SUPABASE_SERVICE_KEY  Secret key (sb_secret_…) atau service_role key lama
+                          (Project Settings → API Keys). RAHASIA, jangan di-commit.
+                          BUKAN publishable/anon key.
 
 Jika tidak diisi, program memakai file lokal (saham.txt dan transaksi.csv) seperti biasa.
 
@@ -28,6 +30,33 @@ def aktif() -> bool:
     return bool(os.environ.get("SUPABASE_URL") and os.environ.get("SUPABASE_SERVICE_KEY"))
 
 
+SALAH_KEY = ("SUPABASE_SERVICE_KEY berisi {jenis}, bukan secret key. Key ini tidak bisa membaca tabel saham "
+             "karena dilindungi Row Level Security. Buka Supabase → Project Settings → API Keys, salin "
+             "**Secret key** (diawali sb_secret_) atau service_role key lama, lalu perbarui secret di GitHub.")
+
+
+def cek_key(key: str):
+    """Hentikan program jika key yang dipakai bukan secret/service_role key."""
+    if key.startswith("sb_secret_"):
+        return
+    if key.startswith("sb_publishable_"):
+        raise SystemExit(SALAH_KEY.format(jenis="publishable key (sb_publishable_…)"))
+    parts = key.split(".")
+    if len(parts) == 3:  # JWT lama: periksa role
+        import base64
+        try:
+            pad = parts[1] + "=" * (-len(parts[1]) % 4)
+            role = json.loads(base64.urlsafe_b64decode(pad)).get("role")
+        except Exception:
+            role = None
+        if role == "service_role":
+            return
+        if role:
+            raise SystemExit(SALAH_KEY.format(jenis=f"key dengan role '{role}'"))
+    raise SystemExit("SUPABASE_SERVICE_KEY tidak dikenali. Gunakan Secret key (sb_secret_…) dari "
+                     "Supabase → Project Settings → API Keys.")
+
+
 def _bersih(v):
     """Ubah nilai numpy/pandas/NaN menjadi tipe JSON biasa."""
     if v is None:
@@ -48,10 +77,12 @@ def _bersih(v):
 class Supabase:
     def __init__(self, url=None, key=None, session=None):
         self.url = (url or os.environ["SUPABASE_URL"]).rstrip("/") + "/rest/v1"
-        key = key or os.environ["SUPABASE_SERVICE_KEY"]
+        key = (key or os.environ["SUPABASE_SERVICE_KEY"]).strip()
+        cek_key(key)
         self.s = session or requests.Session()
-        self.s.headers.update({"apikey": key, "Authorization": f"Bearer {key}",
-                               "Content-Type": "application/json"})
+        self.s.headers.update({"apikey": key, "Content-Type": "application/json"})
+        if not key.startswith("sb_"):  # key lama (JWT) juga dikirim sebagai Bearer
+            self.s.headers["Authorization"] = f"Bearer {key}"
 
     def _cek(self, r):
         if r.status_code >= 400:
