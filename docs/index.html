@@ -107,6 +107,14 @@ section.view { display: grid; gap: 14px; }
 .strip i { display: block; height: 6px; border-radius: 3px; background: var(--surface-2); overflow: hidden; margin-bottom: 4px; }
 .strip i b { display: block; height: 100%; border-radius: 3px; }
 
+.alasan { grid-column: 1 / -1; margin: 10px 0 0; font-size: 14px; line-height: 1.45; display: grid; gap: 4px; }
+.alasan p { margin: 0; }
+.alasan b { font-weight: 700; }
+.ketuk { grid-column: 1 / -1; font-size: 12px; color: var(--accent); font-weight: 600; margin-top: 6px; }
+.cari { display: block; }
+.cari input { background: var(--surface); padding: 12px 14px; font-size: 16px; border-radius: 12px; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+
 /* panels */
 .panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius-lg); padding: 16px 18px; }
 .panel > h2, .panel > h3 { margin-bottom: 10px; }
@@ -196,7 +204,13 @@ input, select { background: var(--surface-2); border: 1px solid var(--line); bor
 
   <main class="wrap">
     <section class="view" id="t-ringkasan">
+      <label class="cari">
+        <span class="sr">Cari saham</span>
+        <input id="q" type="search" placeholder="Cari kode saham, misalnya BBCA" autocapitalize="characters" autocomplete="off" maxlength="6">
+      </label>
+      <div id="hasil-cari"></div>
       <div class="saham-list" id="list-saham"></div>
+      <div id="menunggu"></div>
     </section>
 
     <section class="view" id="t-detail" hidden></section>
@@ -322,7 +336,7 @@ function renderRingkasan() {
     el.innerHTML = `<div class="panel empty">Belum ada data yang bisa dibaca akun ini. Pastikan akses dashboard sudah diaktifkan di Supabase (file <b>supabase/002_akses_dashboard.sql</b>).</div>`;
     return;
   }
-  if (!STATE.analisa.length) { el.innerHTML = `<div class="panel empty">Belum ada hasil analisa. Hasil muncul setelah workflow harian berjalan.</div>`; return; }
+  if (!STATE.analisa.length) { el.innerHTML = `<div class="panel empty">Belum ada hasil analisa. Hasil muncul setelah workflow harian berjalan.</div>`; saringCari(); return; }
   el.innerHTML = STATE.analisa.map(r => `
     <button class="saham" data-kode="${esc(r.kode)}" aria-label="Buka detail ${esc(r.kode)}">
       <div>
@@ -335,9 +349,62 @@ function renderRingkasan() {
       </div>
       <div class="small muted">${(r.pola_candle || []).map(esc).join(", ") || "Tidak ada pola candle khusus"}</div>
       <div class="strip">${ASPEK.map(([k, n]) => `<div><i><b style="width:${r[k] * 10}%;background:${warnaNilai(r[k])}"></b></i>${n}<b>${fmt(r[k], 1)}</b></div>`).join("")}</div>
+      ${ringkasAlasan(r)}
+      <div class="ketuk">Ketuk untuk grafik dan rincian lengkap</div>
     </button>`).join("");
   el.querySelectorAll(".saham").forEach(b => b.addEventListener("click", () => bukaDetail(b.dataset.kode)));
+  saringCari();
+  const tunggu = STATE.watch.filter(w => w.aktif && !STATE.analisa.some(a => a.kode === w.kode));
+  $("#menunggu").innerHTML = tunggu.length ? `<p class="small muted" style="margin:0">Menunggu analisa berikutnya (hari bursa pukul 18.15 WITA): <b>${tunggu.map(w => esc(w.kode)).join(", ")}</b></p>` : "";
 }
+
+// Alasan singkat dari rincian poin: apa yang paling menekan dan paling menahan nilai.
+const ARTI = {
+  BELI: "Mayoritas indikator searah naik dan tren mendukung.",
+  PANTAU: "Cukup positif, tetapi belum cukup kuat untuk masuk. Tunggu konfirmasi.",
+  TUNGGU: "Sinyal campur aduk, belum ada alasan teknikal yang jelas.",
+  HINDARI: "Mayoritas indikator searah turun.",
+};
+function ringkasAlasan(r) {
+  const semua = Object.values(r.rincian || {}).flat().filter(x => x && x.poin);
+  const kecil = s => s.charAt(0).toLowerCase() + s.slice(1);
+  const minus = semua.filter(x => x.poin < 0).sort((a, b) => a.poin - b.poin).slice(0, 3).map(x => kecil(x.alasan));
+  const plus = semua.filter(x => x.poin > 0).sort((a, b) => b.poin - a.poin).slice(0, 2).map(x => kecil(x.alasan));
+  return `<div class="alasan">
+    <p>${esc(ARTI[r.keputusan] || "")}</p>
+    ${minus.length ? `<p><b class="turun">Menekan:</b> ${minus.map(esc).join("; ")}.</p>` : ""}
+    ${plus.length ? `<p><b class="naik">Menahan:</b> ${plus.map(esc).join("; ")}.</p>` : ""}
+  </div>`;
+}
+
+// Pencarian: saring kartu; kode yang belum dipantau bisa langsung ditambahkan.
+function saringCari() {
+  const q = ($("#q").value || "").trim().toUpperCase();
+  document.querySelectorAll("#list-saham .saham").forEach(b => b.hidden = !!q && !b.dataset.kode.includes(q));
+  const out = $("#hasil-cari");
+  if (!q) { out.innerHTML = ""; return; }
+  const dianalisa = STATE.analisa.some(a => a.kode === q);
+  const dipantau = STATE.watch.find(w => w.kode === q);
+  if (dianalisa) { out.innerHTML = ""; return; }
+  if (!/^[A-Z]{4}$/.test(q)) {
+    const ada = STATE.analisa.some(a => a.kode.includes(q));
+    out.innerHTML = ada ? "" : `<p class="small muted" style="margin:0">Kode saham BEI terdiri dari 4 huruf, misalnya BBCA.</p>`;
+    return;
+  }
+  if (dipantau && dipantau.aktif) {
+    out.innerHTML = `<div class="panel small"><b>${esc(q)}</b> sudah dipantau. Hasilnya muncul setelah analisa berikutnya (hari bursa pukul 18.15 WITA).</div>`;
+    return;
+  }
+  out.innerHTML = `<div class="panel"><p style="margin:0 0 10px"><b>${esc(q)}</b> belum dianalisa.</p>
+    <button class="btn" type="button" id="btn-pantau">Pantau ${esc(q)}</button>
+    <p class="small muted" style="margin:10px 0 0">Setelah ditambahkan, analisanya muncul di sini pada run berikutnya (hari bursa pukul 18.15 WITA).</p></div>`;
+  $("#btn-pantau").onclick = async () => {
+    const { error } = await sb.from("saham_watchlist").upsert({ kode: q, aktif: true });
+    if (error) { out.innerHTML = `<div class="msg err">Gagal menambahkan: ${esc(error.message)}</div>`; return; }
+    await muatSemua();
+  };
+}
+$("#q").addEventListener("input", saringCari);
 
 // ---------------------------------------------------------------- indikator (sama dengan indikator.py)
 const sma = (a, n) => a.map((_, i) => i < n - 1 ? null : a.slice(i - n + 1, i + 1).reduce((s, x) => s + x, 0) / n);
@@ -393,6 +460,7 @@ async function bukaDetail(kode) {
         <div class="kata v-${esc(r.keputusan)}">${esc(r.keputusan)}</div>
       </div>
     </div>
+    <div class="panel">${ringkasAlasan(r)}</div>
 
     <div class="panel">
       <div class="chart-label">Harga, MA5, MA20, MA100, Bollinger (20,2)</div><div class="chart" id="c-harga"></div>
