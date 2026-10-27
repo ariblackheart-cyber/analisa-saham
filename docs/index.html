@@ -68,6 +68,7 @@ h3 { font-size: 15px; font-weight: 700; }
 .small { font-size: 13px; }
 .naik { color: var(--naik); } .turun { color: var(--turun); }
 [hidden] { display: none !important; }
+html:not(.asing-aktif) .fitur-asing { display: none !important; }
 
 /* top bar */
 .top { position: sticky; top: 0; z-index: 5; background: var(--bg); border-bottom: 1px solid var(--line); padding-top: env(safe-area-inset-top); }
@@ -260,6 +261,7 @@ input, select { background: var(--surface-2); border: 1px solid var(--line); bor
           <label><input type="radio" name="rek" value="BELI,PANTAU" checked><span>BELI + PANTAU</span></label>
           <label><input type="radio" name="rek" value=""><span>Semua</span></label>
         </div>
+        <div class="fitur-asing">
         <div class="ctl-row">
           <span class="small muted">Urutkan</span>
           <div class="seg seg2 kecil" role="radiogroup" aria-label="Urutkan">
@@ -277,8 +279,9 @@ input, select { background: var(--surface-2); border: 1px solid var(--line); bor
         </div>
         <label class="cek"><input type="checkbox" id="hanya-akum"> Hanya yang diakumulasi asing</label>
         <p class="small muted" style="margin:8px 0 0" id="asing-info"></p>
+        </div>
       </div>
-      <div class="panel" id="asing-pasar" hidden></div>
+      <div class="panel fitur-asing" id="asing-pasar" hidden></div>
       <div class="saham-list" id="list-rek"></div>
       <p class="small muted" style="margin:0">Hasil aturan teknikal mekanis, bukan rekomendasi investasi. Tidak memperhitungkan berita, fundamental, atau kondisi pasar. Selalu gunakan batas rugi.</p>
     </section>
@@ -301,7 +304,7 @@ input, select { background: var(--surface-2); border: 1px solid var(--line); bor
           <div class="msg full" id="trx-msg" hidden></div>
         </form>
       </div>
-      <div class="panel">
+      <div class="panel fitur-asing">
         <h2>Unggah data asing dari BEI</h2>
         <ol class="small" style="margin:6px 0 10px;padding-left:18px">
           <li>Buka idx.co.id, lalu Data Pasar, Ringkasan Perdagangan, <b>Ringkasan Saham</b>.</li>
@@ -345,9 +348,12 @@ input, select { background: var(--surface-2); border: 1px solid var(--line); bor
 const SUPABASE_URL = "https://ozuyxymtvtonivohxuoj.supabase.co";
 const SUPABASE_KEY = "sb_publishable_MvMpajFUUALK17aw-z1Kvw_a_ZCnThL";
 const FEE_BELI = 0.0015, FEE_JUAL = 0.0025, LOT = 100;
+// Fitur data asing (unggah file Ringkasan Saham BEI). Disembunyikan; ubah ke true untuk menampilkan lagi.
+const FITUR_ASING = false;
 const ASPEK = [["nilai_tren","Tren"],["nilai_volume","Volume"],["nilai_stochastic","Stoch"],["nilai_momentum","Momentum"],["nilai_candle","Candle"]];
 
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+if (FITUR_ASING) document.documentElement.classList.add("asing-aktif");
 const $ = (s, el = document) => el.querySelector(s);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const fmt = (x, d = 0) => x == null || isNaN(x) ? "-" : Number(x).toLocaleString("id-ID", { minimumFractionDigits: d, maximumFractionDigits: d });
@@ -364,7 +370,7 @@ async function mulai() {
   if (!session) return tampilLogin();
   $("#v-login").hidden = true; $("#v-app").hidden = false;
   await muatSemua();
-  muatTanggalAsing();
+  if (FITUR_ASING) muatTanggalAsing();
   await muatKunci();
   renderBerita();
 }
@@ -460,6 +466,7 @@ async function muatRekomendasi() {
 }
 async function muatAsing(hari) {
   STATE.asing ||= {};
+  if (!FITUR_ASING) return;
   if (STATE.asing[hari]) return;
   const { data, error } = await sb.rpc("saham_asing_akumulasi", { p_hari: hari });
   if (error) console.error(error);
