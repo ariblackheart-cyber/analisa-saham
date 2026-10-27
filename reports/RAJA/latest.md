@@ -71,26 +71,27 @@ Tren jangka pendek: **turun** (MA20 berubah -51 dalam 5 hari).
 
 ## 8. Fundamental (laporan keuangan)
 
-**Nilai fundamental: 8.7/10 — Kuat** (terpisah dari keputusan teknikal; dipakai untuk menilai kualitas perusahaan jangka panjang).
+**Nilai fundamental: 9.4/10 — Kuat** (terpisah dari keputusan teknikal; dipakai untuk menilai kualitas perusahaan jangka panjang).
 
 | PER | PBV | ROE | DER | Margin laba | Pendapatan YoY | Laba YoY | Kapitalisasi |
 |---|---|---|---|---|---|---|---|
-| 15.3 | 47200.00 | 19.9% | 1.13x | 14.3% | 23.4% | 205.1% | 9.976 miliar |
+| 15.0 | 2.61 | 19.9% | 1.13x | 14.3% | 23.4% | 205.1% | 9.98 T |
 
-Laporan laba rugi per kuartal (miliar Rp):
+Laporan keuangan emiten ini disajikan dalam **USD**. PBV dihitung ulang dengan kurs USD/IDR 18.081.
+
+Laporan laba rugi per kuartal (juta USD):
 
 | Periode | Pendapatan | Laba bersih |
 |---|---|---|
-| 2026-06-30 | 0 | 0.0 |
-| 2026-03-31 | 0 | 0.0 |
-| 2025-12-31 | 0 | 0.0 |
-| 2025-09-30 | 0 | 0.0 |
-| 2025-06-30 | 0 | 0.0 |
+| 2026-06-30 | 75.9 | 14.1 |
+| 2026-03-31 | 55.3 | 8.6 |
+| 2025-12-31 | 70.6 | 9.5 |
+| 2025-09-30 | 68.4 | 6.4 |
+| 2025-06-30 | 61.5 | 4.6 |
 
 | Kondisi | Poin |
 |---|---|
-| PER 15.3x: wajar | +0.25 |
-| PBV 47200.00x: jauh di atas nilai buku | -0.75 |
+| PER 15.0x: wajar | +0.25 |
 | ROE 20%: sangat efisien | +1.25 |
 | Margin laba bersih 14%: sehat | +0.50 |
 | Pendapatan tumbuh +23% YoY | +0.93 |
