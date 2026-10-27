@@ -47,6 +47,22 @@ def ambil_data(kode: str, csv: str | None = None) -> pd.DataFrame:
             df.columns = df.columns.get_level_values(0)
     df = df[["Open", "High", "Low", "Close", "Volume"]].dropna()
     df = df[df["Volume"] > 0]  # buang hari libur / tanpa transaksi
+    if not csv:
+        df = buang_candle_berjalan(df)
+    return df
+
+
+def buang_candle_berjalan(df: pd.DataFrame, sekarang=None) -> pd.DataFrame:
+    """Jika dijalankan saat bursa masih buka, candle hari ini belum final: buang.
+
+    BEI tutup 16:00 WIB (pre-closing sampai ±16:15). Sebelum 16:30 WIB candle hari ini diabaikan.
+    """
+    from datetime import datetime, timedelta, timezone
+    wib = timezone(timedelta(hours=7))
+    sekarang = sekarang or datetime.now(wib)
+    if len(df) and pd.Timestamp(df.index[-1]).date() == sekarang.date() and \
+            (sekarang.hour, sekarang.minute) < (16, 30):
+        return df.iloc[:-1]
     return df
 
 

@@ -19,7 +19,7 @@ from pathlib import Path
 import pandas as pd
 
 import db
-from analisa import ROOT, IKON, analisa, num, rp
+from analisa import ROOT, IKON, analisa, buang_candle_berjalan, num, rp
 
 MIN_TRANSAKSI = 5e9     # Rp 5 miliar per hari
 MIN_HARI = 120          # butuh data cukup untuk MA100
@@ -55,16 +55,18 @@ def unduh(kode_list: list[str], csv_dir: str | None) -> dict[str, pd.DataFrame]:
     return hasil
 
 
-def bersihkan(df: pd.DataFrame) -> pd.DataFrame:
+def bersihkan(df: pd.DataFrame, final_saja: bool = True) -> pd.DataFrame:
     df = df[["Open", "High", "Low", "Close", "Volume"]].dropna()
-    return df[df["Volume"] > 0]
+    df = df[df["Volume"] > 0]
+    return buang_candle_berjalan(df) if final_saja else df
 
 
-def pindai(data: dict[str, pd.DataFrame]):
+def pindai(data: dict[str, pd.DataFrame], final_saja: bool = True):
     baris, lewat = [], []
-    tgl_terbaru = max((d.index[-1] for d in data.values() if len(d)), default=None)
+    tgl_terbaru = max((bersihkan(d, final_saja).index[-1] for d in data.values()
+                       if len(bersihkan(d, final_saja))), default=None)
     for kode, df in data.items():
-        df = bersihkan(df)
+        df = bersihkan(df, final_saja)
         if len(df) < MIN_HARI:
             lewat.append((kode, "data kurang"))
             continue
@@ -130,7 +132,7 @@ def main():
     kode_list = baca_universe()
     print(f"Memindai {len(kode_list)} saham…")
     data = unduh(kode_list, a.csv_dir)
-    baris, lewat = pindai(data)
+    baris, lewat = pindai(data, final_saja=not a.csv_dir)
     print(f"{len(baris)} lolos, {len(lewat)} dilewati.")
     for k, alasan in lewat:
         print(f"  - {k}: {alasan}")
