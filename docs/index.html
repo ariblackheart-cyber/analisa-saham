@@ -158,6 +158,11 @@ input, select { background: var(--surface-2); border: 1px solid var(--line); bor
 .seg3 { grid-template-columns: 1fr 1.4fr 1fr !important; }
 .seg.kecil label { padding: 7px 6px; font-size: 13px; }
 .seg2 { grid-template-columns: 1fr 1fr; }
+.chips { display: flex; gap: 8px; flex-wrap: wrap; }
+.chips button { border: 1px solid var(--line); background: var(--surface-2); border-radius: 999px; padding: 7px 16px; font-weight: 700; cursor: pointer; }
+.chips button[aria-checked="true"] { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.sim-isi > h3:first-child { display: none; }
+.sim-isi { margin-top: 4px; }
 .ctl-row { display: grid; grid-template-columns: 96px 1fr; align-items: center; gap: 10px; margin-top: 10px; }
 .cek { display: flex; gap: 8px; align-items: center; margin-top: 12px; font-size: 14px; }
 .cek input { width: auto; }
@@ -364,7 +369,7 @@ async function muatSemua() {
   const tanpa = hitungPosisi(STATE.trx).filter(p => p.lembar > 0 && !STATE.analisa.some(a => a.kode === p.kode)).map(p => p.kode);
   STATE.hargaCadangan = {};
   if (tanpa.length) {
-    const c = await sb.from("saham_screener").select("kode,tanggal,close").in("kode", tanpa).order("tanggal", { ascending: false });
+    const c = await sb.from("saham_screener").select("kode,tanggal,close,keputusan,support,stop_loss,target1,ma20").in("kode", tanpa).order("tanggal", { ascending: false });
     for (const r of c.data || []) STATE.hargaCadangan[r.kode] ||= r;
   }
   STATE.aksesKosong = !gagal && !STATE.analisa.length && !STATE.watch.length;
@@ -878,8 +883,38 @@ function renderPortofolio() {
   el.innerHTML = `<div class="panel"><h2>Posisi saat ini</h2>${tabelPosisi(aktif)}
       ${realized ? `<p class="small" style="margin:10px 0 0">Untung/rugi terealisasi dari penjualan (setelah fee): <b class="${kelas(realized)}">${fmt(realized)}</b></p>` : ""}
       <p class="small muted" style="margin:6px 0 0">Harga memakai penutupan terakhir. Untung/rugi belum dipotong fee jual ${FEE_JUAL * 100}%.</p></div>`
-    + aktif.map(p => { const a = STATE.analisa.find(x => x.kode === p.kode);
-        return `<div class="panel"><h2>${esc(p.kode)}</h2>${tabelAvgDown(p, a)}${simulasiJual(p, a)}</div>`; }).join("");
+    + `<div class="panel" id="panel-sim"></div>`;
+  renderSimulasi(aktif);
+}
+
+// Satu panel simulasi: pilih saham dan jenis simulasi (pilihan diingat di perangkat ini).
+const simpan = (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} };
+const ambil = k => { try { return localStorage.getItem(k); } catch (e) { return null; } };
+function dataUntuk(kode) {
+  const a = STATE.analisa.find(x => x.kode === kode);
+  if (a) return a;
+  const c = (STATE.hargaCadangan || {})[kode];
+  return c ? { ...c, ma20: c.ma20 ?? null } : null;   // dari pemindaian: tanpa target 2
+}
+function renderSimulasi(aktif) {
+  const el = $("#panel-sim"); if (!el) return;
+  const kodeList = aktif.map(p => p.kode);
+  let kode = STATE.simKode || ambil("simKode");
+  if (!kodeList.includes(kode)) kode = kodeList[0];
+  let mode = STATE.simMode || ambil("simMode") || "avgdown";
+  STATE.simKode = kode; STATE.simMode = mode;
+  const p = aktif.find(x => x.kode === kode), a = dataUntuk(kode);
+  el.innerHTML = `<h2>Simulasi</h2>
+    <div class="chips" role="radiogroup" aria-label="Pilih saham">${kodeList.map(k =>
+      `<button type="button" role="radio" aria-checked="${k === kode}" data-simkode="${esc(k)}">${esc(k)}</button>`).join("")}</div>
+    <div class="seg seg2 kecil" role="radiogroup" aria-label="Jenis simulasi" style="margin-top:10px">
+      <label><input type="radio" name="simmode" value="avgdown" ${mode === "avgdown" ? "checked" : ""}><span>Average down</span></label>
+      <label><input type="radio" name="simmode" value="jual" ${mode === "jual" ? "checked" : ""}><span>Proyeksi jual</span></label>
+    </div>
+    <div class="sim-isi">${!a ? `<p class="small muted" style="margin-top:12px">Harga ${esc(kode)} belum tersedia. Simulasi muncul setelah run harian berikutnya.</p>`
+      : mode === "jual" ? simulasiJual(p, a) : tabelAvgDown(p, a)}</div>`;
+  el.querySelectorAll("[data-simkode]").forEach(b => b.onclick = () => { STATE.simKode = b.dataset.simkode; simpan("simKode", b.dataset.simkode); renderSimulasi(aktif); });
+  el.querySelectorAll('input[name="simmode"]').forEach(i => i.onchange = () => { STATE.simMode = i.value; simpan("simMode", i.value); renderSimulasi(aktif); });
 }
 
 // ---------------------------------------------------------------- catat
