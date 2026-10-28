@@ -9,29 +9,29 @@ Analisa teknikal otomatis untuk saham Bursa Efek Indonesia. Setiap hari bursa, G
 <!-- RINGKASAN:START -->
 | Saham | Tanggal | Close | Perubahan | Tren | Volume | Stoch | Momentum | Candle | Total | Keputusan | Fundamental |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| [AALI](reports/AALI/latest.md) | 2026-10-27 | 9.800 | +3.16% | 10.0 | 9.1 | 3.5 | 9.5 | 8.3 | **8.2** | 🟢 BELI | 9.2 Kuat |
-| [BBRI](reports/BBRI/latest.md) | 2026-10-27 | 2.900 | -0.34% | 2.0 | 5.8 | 5.8 | 3.0 | 7.9 | **4.6** | ⚪ TUNGGU | 8.5 Kuat |
-| [BRIS](reports/BRIS/latest.md) | 2026-10-27 | 1.050 | -0.47% | 2.0 | 0.4 | 6.5 | 4.0 | 4.3 | **3.3** | 🔴 HINDARI | 9.7 Kuat |
-| [RAJA](reports/RAJA/latest.md) | 2026-10-27 | 452 | -4.24% | 0.0 | 3.7 | 5.0 | 4.0 | 4.4 | **3.2** | 🔴 HINDARI | 9.4 Kuat |
+| [AALI](reports/AALI/latest.md) | 2026-10-28 | 9.750 | -0.51% | 10.0 | 4.6 | 3.5 | 9.5 | 4.8 | **6.7** | 🟡 PANTAU | 9.2 Kuat |
+| [BBRI](reports/BBRI/latest.md) | 2026-10-28 | 2.920 | +0.69% | 2.0 | 7.9 | 5.8 | 6.0 | 5.8 | **5.3** | ⚪ TUNGGU | 8.5 Kuat |
+| [BRIS](reports/BRIS/latest.md) | 2026-10-28 | 1.070 | +1.90% | 2.0 | 5.4 | 6.5 | 4.0 | 7.8 | **4.9** | ⚪ TUNGGU | 9.7 Kuat |
+| [RAJA](reports/RAJA/latest.md) | 2026-10-28 | 448 | -0.88% | 0.0 | 4.1 | 3.5 | 4.0 | 7.3 | **3.4** | 🔴 HINDARI | 9.4 Kuat |
 <!-- RINGKASAN:END -->
 
 ## Rekomendasi teknikal
 
 <!-- REKOMENDASI:START -->
-10 nilai teknikal tertinggi dari 81 saham likuid yang dipindai (2026-10-27). Hasil aturan mekanis, bukan rekomendasi investasi.
+10 nilai teknikal tertinggi dari 81 saham likuid yang dipindai (2026-10-28). Hasil aturan mekanis, bukan rekomendasi investasi.
 
 | # | Saham | Close | Perubahan | Total | Keputusan | Tren | Volume | Stoch | Momentum | Candle |
 |---|---|---|---|---|---|---|---|---|---|---|
-| 1 | **PWON** | 294 | +3.52% | **8.5** | 🟢 BELI | 10.0 | 9.7 | 5.8 | 9.5 | 6.5 |
-| 2 | **AALI** | 9.800 | +3.16% | **8.2** | 🟢 BELI | 10.0 | 9.1 | 3.5 | 9.5 | 8.3 |
-| 3 | **UNTR** | 26.500 | +6.00% | **8.1** | 🟢 BELI | 10.0 | 7.3 | 5.0 | 9.5 | 8.5 |
-| 4 | **INTP** | 5.950 | +5.78% | **8.1** | 🟢 BELI | 10.0 | 9.7 | 4.2 | 7.5 | 8.5 |
-| 5 | **AADI** | 11.700 | +1.52% | **8.1** | 🟢 BELI | 10.0 | 9.6 | 6.5 | 9.5 | 2.9 |
-| 6 | **CTRA** | 585 | +1.74% | **7.9** | 🟢 BELI | 10.0 | 8.8 | 5.0 | 7.5 | 7.8 |
-| 7 | **AKRA** | 1.435 | +2.50% | **7.5** | 🟢 BELI | 8.0 | 10.0 | 5.8 | 7.5 | 5.6 |
-| 8 | **JSMR** | 2.850 | +5.56% | **7.4** | 🟢 BELI | 8.0 | 9.9 | 5.0 | 7.5 | 6.2 |
-| 9 | **HMSP** | 675 | +5.47% | **7.4** | 🟢 BELI | 7.0 | 8.9 | 4.2 | 7.5 | 10.0 |
-| 10 | **DSNG** | 1.470 | +5.00% | **7.2** | 🟢 BELI | 8.0 | 6.6 | 5.8 | 7.5 | 8.5 |
+| 1 | **PWON** | 290 | -1.36% | **7.4** | 🟢 BELI | 10.0 | 5.9 | 5.8 | 9.5 | 4.2 |
+| 2 | **ASII** | 5.000 | +7.99% | **7.2** | 🟢 BELI | 8.0 | 6.3 | 5.8 | 7.5 | 8.2 |
+| 3 | **JSMR** | 2.880 | +1.05% | **7.1** | 🟢 BELI | 10.0 | 8.8 | 3.5 | 7.5 | 4.0 |
+| 4 | **PTBA** | 3.250 | +2.52% | **7.0** | 🟢 BELI | 10.0 | 6.6 | 6.5 | 6.5 | 4.0 |
+| 5 | **AADI** | 11.650 | -0.43% | **6.9** | 🟡 PANTAU | 10.0 | 5.6 | 5.0 | 9.5 | 2.6 |
+| 6 | **UNTR** | 25.600 | -3.40% | **6.9** | 🟡 PANTAU | 10.0 | 5.5 | 5.0 | 9.5 | 2.5 |
+| 7 | **CTRA** | 580 | -0.85% | **6.8** | 🟡 PANTAU | 10.0 | 5.6 | 5.0 | 7.5 | 4.5 |
+| 8 | **AALI** | 9.750 | -0.51% | **6.7** | 🟡 PANTAU | 10.0 | 4.6 | 3.5 | 9.5 | 4.8 |
+| 9 | **AUTO** | 3.350 | +0.30% | **6.6** | 🟡 PANTAU | 8.0 | 6.5 | 5.8 | 6.5 | 5.8 |
+| 10 | **DSNG** | 1.465 | -0.34% | **6.3** | 🟡 PANTAU | 8.0 | 4.2 | 5.8 | 7.5 | 5.4 |
 <!-- REKOMENDASI:END -->
 
 Setiap hari bursa, semua saham di `universe.txt` (±85 saham likuid) dinilai dengan aturan yang sama. Saham dengan rata-rata transaksi di bawah Rp 5 miliar/hari dilewati. Daftar lengkap dan alasannya ada di tab **Rekomendasi** di dashboard. Ubah daftar saham di `universe.txt` dan batas likuiditas di `screener.py`.
