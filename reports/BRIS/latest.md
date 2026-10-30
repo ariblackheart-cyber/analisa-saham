@@ -1,4 +1,4 @@
-# Analisa harian BRIS — 2026-10-29
+# Analisa harian BRIS — 2026-10-30
 
 ![grafik](../../charts/BRIS/latest.png)
 
@@ -6,70 +6,68 @@
 
 | Open | High | Low | Close | Perubahan | Volume |
 |---|---|---|---|---|---|
-| 1.085 | 1.090 | 1.010 | **1.010** | -60 (-5.61%) | 104.246.700 |
+| 1.005 | 1.025 | 970 | **1.005** | -5 (-0.50%) | 130.069.300 |
 
-### 🔴 Keputusan teknikal: **HINDARI** — nilai total **2.3/10**
+### 🔴 Keputusan teknikal: **HINDARI** — nilai total **3.7/10**
 
 Mayoritas indikator searah turun. Bagi yang memegang, pertimbangkan batas rugi.
 
 | Aspek | Nilai | |
 |---|---|---|
 | Tren | **0.0**/10 | `░░░░░░░░░░` |
-| Volume | **3.2**/10 | `███░░░░░░░` |
-| Stochastic | **4.2**/10 | `████░░░░░░` |
-| Momentum | **4.0**/10 | `████░░░░░░` |
-| Candle | **0.0**/10 | `░░░░░░░░░░` |
+| Volume | **3.3**/10 | `███░░░░░░░` |
+| Stochastic | **2.8**/10 | `███░░░░░░░` |
+| Momentum | **7.0**/10 | `███████░░░` |
+| Candle | **7.0**/10 | `███████░░░` |
 
 **Level harga (otomatis):**
 
-- Support 20 hari: 1.000 · Resistance 20 hari: 1.435
-- Batas rugi (stop loss): 960 (di bawah support atau −5%)
-- Target 1: 1.200 · Target 2: 1.435
-- Rasio untung : rugi ke target 1 = 3.76 : 1
+- Support 20 hari: 970 · Resistance 20 hari: 1.425
+- Batas rugi (stop loss): 955 (di bawah support atau −5%)
+- Target 1: 1.179 · Target 2: 1.425
+- Rasio untung : rugi ke target 1 = 3.47 : 1
 
 ## 1. Candlestick
 
-Candle merah (ditutup turun). Badan 94% dari rentang hari ini, sumbu atas 6%, sumbu bawah 0%.
+Candle netral. Badan 0% dari rentang hari ini, sumbu atas 36%, sumbu bawah 64%.
 
-- 🔴 **Marubozu merah** — Hampir tanpa sumbu: penjual menguasai sepanjang hari.
-- 🔴 **Bearish engulfing** — Badan merah menelan badan hijau sebelumnya: penjual mengambil alih.
+- 🟢 **Dragonfly doji** — Badan sangat kecil dengan sumbu bawah panjang: penjual sempat menekan, tetapi pembeli mengembalikan harga.
 
 ## 2. Volume
 
-- Volume hari ini 104.246.700 lembar, rata-rata 20 hari 104.399.010 (**1.00x** rata-rata).
+- Volume hari ini 130.069.300 lembar, rata-rata 20 hari 109.798.510 (**1.18x** rata-rata).
 - Volume normal.
-- 5 hari terakhir: volume candle hijau 29%, candle merah 71%.
+- 5 hari terakhir: volume candle hijau 36%, candle merah 64%.
 
 ## 3. Stochastic & Stoch RSI
 
-- Stochastic (14,3,3): %K 11.4, %D 12.2, zona **jenuh jual (oversold)**.
-- %K memotong %D ke bawah.
-- Stoch RSI (14,14,3,3): K 92.6, D 91.2, zona **overbought**.
-- K di atas D: momentum masih naik.
+- Stochastic (14,3,3): %K 10.2, %D 12.2, zona **jenuh jual (oversold)**.
+- Stoch RSI (14,14,3,3): K 86.0, D 92.6, zona **overbought**.
+- Stoch RSI K memotong D ke bawah: momentum mulai melemah.
 
 ## 4. Tren (Moving Average)
 
-Tren jangka pendek: **turun** (MA20 berubah -109 dalam 5 hari).
-- Harga di bawah MA5 (1.041).
-- Harga di bawah MA20 (1.200).
-- Harga di bawah MA100 (1.641).
+Tren jangka pendek: **turun** (MA20 berubah -105 dalam 5 hari).
+- Harga di bawah MA5 (1.038).
+- Harga di bawah MA20 (1.179).
+- Harga di bawah MA100 (1.633).
 
 ## 5. Bollinger Bands
 
-- Bollinger (20,2): atas 1.519, tengah 1.200, bawah 880. Posisi harga 20% dari pita bawah ke atas, lebar pita 53.3%.
+- Bollinger (20,2): atas 1.494, tengah 1.179, bawah 865. Posisi harga 22% dari pita bawah ke atas, lebar pita 53.3%.
 
 ## 6. MACD & RSI
 
-- MACD (12,26,9): garis -139.75, sinyal -138.85, histogram -0.90.
-- Histogram membaik dibanding kemarin: tekanan turun berkurang / tekanan naik bertambah.
+- MACD (12,26,9): garis -137.31, sinyal -138.55, histogram 1.24.
+- MACD memotong garis sinyal ke atas (bullish cross).
 - MACD masih di bawah nol: tren menengah masih lemah.
-- RSI (14): 20.3 — oversold.
+- RSI (14): 20.1 — oversold.
 
 ## 7. Support & Resistance
 
-- Support 20 hari (low terendah): 1.000.
-- Resistance 20 hari (high tertinggi): 1.435.
-- Resistance terdekat lain: MA20 1.200, MA100 1.641.
+- Support 20 hari (low terendah): 970.
+- Resistance 20 hari (high tertinggi): 1.425.
+- Resistance terdekat lain: MA20 1.179, MA100 1.633.
 
 ## 8. Fundamental (laporan keuangan)
 
@@ -77,7 +75,7 @@ Tren jangka pendek: **turun** (MA20 berubah -109 dalam 5 hari).
 
 | PER | PBV | ROE | DER | Margin laba | Pendapatan YoY | Laba YoY | Kapitalisasi |
 |---|---|---|---|---|---|---|---|
-| 5.8 | 0.91 | 16.1% | 0.18x | 31.5% | 7.2% | 4.1% | 46.59 T |
+| 5.8 | 0.91 | 16.1% | 0.18x | 31.5% | 7.2% | 4.1% | 46.36 T |
 
 Laporan laba rugi per kuartal (miliar Rp):
 
@@ -114,38 +112,37 @@ Setiap aspek mulai dari **5** (netral), lalu ditambah atau dikurangi poin di baw
 | Harga di bawah MA100 | -1.50 |
 | MA20 menurun dalam 5 hari | -1.00 |
 
-**Volume: 3.2/10** (bobot 20%)
+**Volume: 3.3/10** (bobot 20%)
 
 | Kondisi | Poin |
 |---|---|
-| Harga turun dengan volume 1.00x rata-rata 20 hari | -1.00 |
-| Volume hijau 5 hari 29% (akumulasi vs distribusi) | -0.84 |
+| Harga turun dengan volume 1.18x rata-rata 20 hari | -1.18 |
+| Volume hijau 5 hari 36% (akumulasi vs distribusi) | -0.55 |
 
-**Stochastic: 4.2/10** (bobot 20%)
-
-| Kondisi | Poin |
-|---|---|
-| Stochastic: K memotong D ke bawah | -1.50 |
-| Stochastic oversold (11): peluang pantulan | +0.75 |
-| Stoch RSI: K di atas D | +0.75 |
-| Stoch RSI overbought (93): rawan koreksi | -0.75 |
-
-**Momentum: 4.0/10** (bobot 20%)
+**Stochastic: 2.8/10** (bobot 20%)
 
 | Kondisi | Poin |
 |---|---|
-| MACD di bawah garis sinyal | -1.50 |
+| Stochastic: K di bawah D | -0.75 |
+| Stochastic oversold (10): peluang pantulan | +0.75 |
+| Stoch RSI: K memotong D ke bawah | -1.50 |
+| Stoch RSI overbought (86): rawan koreksi | -0.75 |
+
+**Momentum: 7.0/10** (bobot 20%)
+
+| Kondisi | Poin |
+|---|---|
+| MACD di atas garis sinyal | +1.50 |
 | MACD di bawah nol | -1.00 |
 | Histogram MACD membaik | +1.00 |
 | RSI 20 oversold, peluang pantulan | +0.50 |
 
-**Candle: 0.0/10** (bobot 15%)
+**Candle: 7.0/10** (bobot 15%)
 
 | Kondisi | Poin |
 |---|---|
-| Badan candle merah 94% dari rentang | -1.41 |
-| Pola Marubozu merah | -2.00 |
-| Pola Bearish engulfing | -2.00 |
+| Badan candle netral 0% dari rentang | +0.00 |
+| Pola Dragonfly doji | +2.00 |
 
 
 _Laporan ini dibuat otomatis dari aturan teknikal sederhana. Bukan rekomendasi beli atau jual; selalu kombinasikan dengan analisa sendiri dan manajemen risiko._
