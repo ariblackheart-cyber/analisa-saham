@@ -9,29 +9,29 @@ Analisa teknikal otomatis untuk saham Bursa Efek Indonesia. Setiap hari bursa, G
 <!-- RINGKASAN:START -->
 | Saham | Tanggal | Close | Perubahan | Tren | Volume | Stoch | Momentum | Candle | Total | Keputusan | Fundamental |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| [AALI](reports/AALI/latest.md) | 2026-11-02 | 9.600 | -0.26% | 8.0 | 4.6 | 2.8 | 7.5 | 4.8 | **5.7** | 🟡 PANTAU | 10.0 Kuat |
-| [RAJA](reports/RAJA/latest.md) | 2026-11-02 | 418 | +6.09% | 0.0 | 4.8 | 8.8 | 4.0 | 8.3 | **4.8** | ⚪ TUNGGU | 9.4 Kuat |
-| [BBRI](reports/BBRI/latest.md) | 2026-11-02 | 2.820 | +0.71% | 0.0 | 6.7 | 3.5 | 6.0 | 5.4 | **4.1** | ⚪ TUNGGU | 8.5 Kuat |
-| [BRIS](reports/BRIS/latest.md) | 2026-11-02 | 1.015 | +1.00% | 0.0 | 4.4 | 3.5 | 7.0 | 5.3 | **3.8** | 🔴 HINDARI | 9.7 Kuat |
+| [AALI](reports/AALI/latest.md) | 2026-11-03 | 9.450 | -1.56% | 8.0 | 2.9 | 2.8 | 7.5 | 4.4 | **5.3** | ⚪ TUNGGU | 10.0 Kuat |
+| [BRIS](reports/BRIS/latest.md) | 2026-11-03 | 1.010 | -0.49% | 0.0 | 3.3 | 8.0 | 7.0 | 4.5 | **4.3** | ⚪ TUNGGU | 9.7 Kuat |
+| [RAJA](reports/RAJA/latest.md) | 2026-11-03 | 390 | -6.70% | 0.0 | 3.0 | 7.2 | 4.0 | 0.0 | **2.9** | 🔴 HINDARI | 9.4 Kuat |
+| [BBRI](reports/BBRI/latest.md) | 2026-11-03 | 2.660 | -5.67% | 0.0 | 4.1 | 3.5 | 1.0 | 0.0 | **1.7** | 🔴 HINDARI | 8.5 Kuat |
 <!-- RINGKASAN:END -->
 
 ## Rekomendasi teknikal
 
 <!-- REKOMENDASI:START -->
-10 nilai teknikal tertinggi dari 81 saham likuid yang dipindai (2026-11-02). Hasil aturan mekanis, bukan rekomendasi investasi.
+10 nilai teknikal tertinggi dari 81 saham likuid yang dipindai (2026-11-03). Hasil aturan mekanis, bukan rekomendasi investasi.
 
 | # | Saham | Close | Perubahan | Total | Keputusan | Tren | Volume | Stoch | Momentum | Candle |
 |---|---|---|---|---|---|---|---|---|---|---|
-| 1 | **ASII** | 4.860 | +1.25% | **7.6** | 🟢 BELI | 10.0 | 5.5 | 2.8 | 9.5 | 10.0 |
-| 2 | **JSMR** | 2.850 | +1.06% | **6.6** | 🟡 PANTAU | 10.0 | 7.1 | 2.0 | 7.5 | 5.2 |
-| 3 | **PGAS** | 1.370 | +3.79% | **6.1** | 🟡 PANTAU | 5.0 | 6.2 | 5.8 | 7.5 | 6.2 |
-| 4 | **INTP** | 5.550 | -0.45% | **6.0** | 🟡 PANTAU | 8.0 | 5.8 | 3.5 | 7.5 | 4.3 |
-| 5 | **AALI** | 9.600 | -0.26% | **5.7** | 🟡 PANTAU | 8.0 | 4.6 | 2.8 | 7.5 | 4.8 |
-| 6 | **ITMG** | 24.975 | +0.30% | **5.6** | 🟡 PANTAU | 5.0 | 4.8 | 6.5 | 6.0 | 5.7 |
-| 7 | **ADMR** | 1.320 | +5.60% | **5.3** | ⚪ TUNGGU | 2.0 | 7.2 | 5.8 | 6.0 | 7.0 |
-| 8 | **TAPG** | 1.925 | +1.58% | **5.3** | ⚪ TUNGGU | 5.0 | 6.1 | 2.0 | 6.0 | 8.2 |
-| 9 | **TPIA** | 1.345 | +5.08% | **5.3** | ⚪ TUNGGU | 2.0 | 5.0 | 7.2 | 6.0 | 7.6 |
-| 10 | **ESSA** | 530 | +6.00% | **5.3** | ⚪ TUNGGU | 2.0 | 6.8 | 3.5 | 6.0 | 10.0 |
+| 1 | **JSMR** | 2.780 | -2.46% | **5.3** | ⚪ TUNGGU | 8.0 | 4.8 | 4.2 | 7.5 | 0.0 |
+| 2 | **AALI** | 9.450 | -1.56% | **5.3** | ⚪ TUNGGU | 8.0 | 2.9 | 2.8 | 7.5 | 4.4 |
+| 3 | **INTP** | 5.475 | -1.35% | **4.9** | ⚪ TUNGGU | 8.0 | 2.4 | 3.5 | 7.5 | 1.5 |
+| 4 | **ASII** | 4.750 | -2.26% | **4.5** | ⚪ TUNGGU | 5.0 | 4.1 | 2.8 | 7.5 | 2.9 |
+| 5 | **PGAS** | 1.330 | -2.92% | **4.4** | ⚪ TUNGGU | 2.0 | 4.8 | 5.8 | 6.0 | 4.2 |
+| 6 | **GOTO** | 24 | +0.00% | **4.4** | ⚪ TUNGGU | 2.0 | 3.0 | 5.8 | 7.0 | 5.0 |
+| 7 | **BRIS** | 1.010 | -0.49% | **4.3** | ⚪ TUNGGU | 0.0 | 3.3 | 8.0 | 7.0 | 4.5 |
+| 8 | **ADMR** | 1.300 | -1.52% | **4.3** | ⚪ TUNGGU | 2.0 | 4.8 | 5.8 | 6.0 | 2.9 |
+| 9 | **ICBP** | 5.650 | -1.31% | **4.2** | ⚪ TUNGGU | 2.0 | 3.2 | 8.0 | 3.0 | 6.1 |
+| 10 | **MAPI** | 1.245 | +2.89% | **4.1** | ⚪ TUNGGU | 0.0 | 6.9 | 6.5 | 3.0 | 5.6 |
 <!-- REKOMENDASI:END -->
 
 Setiap hari bursa, semua saham di `universe.txt` (±85 saham likuid) dinilai dengan aturan yang sama. Saham dengan rata-rata transaksi di bawah Rp 5 miliar/hari dilewati. Daftar lengkap dan alasannya ada di tab **Rekomendasi** di dashboard. Ubah daftar saham di `universe.txt` dan batas likuiditas di `screener.py`.
