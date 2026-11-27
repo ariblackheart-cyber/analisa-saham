@@ -262,6 +262,7 @@ input, select { background: var(--surface-2); border: 1px solid var(--line); bor
           <label><input type="radio" name="rek" value="BELI,PANTAU" checked><span>BELI + PANTAU</span></label>
           <label><input type="radio" name="rek" value=""><span>Semua</span></label>
         </div>
+        <label class="cek"><input type="checkbox" id="hanya-setup"> Hanya yang punya setup day trade</label>
         <div class="fitur-asing">
         <div class="ctl-row">
           <span class="small muted">Urutkan</span>
@@ -486,6 +487,8 @@ function teksAsing(a, hari) {
 }
 document.querySelectorAll('input[name="rek"], input[name="urut"]').forEach(i => i.addEventListener("change", renderRekomendasi));
 $("#hanya-akum").addEventListener("change", renderRekomendasi);
+$("#hanya-setup").addEventListener("change", renderRekomendasi);
+const SETUP = { breakout_20d: "Breakout 20 hari", bull_flag: "Bull flag", reclaim_ma20: "Kembali di atas MA20", oversold: "Oversold (RSI < 30)", oversold_bounce: "Pantulan oversold" };
 document.querySelectorAll('input[name="periode"]').forEach(i => i.addEventListener("change", async () => {
   await muatAsing(+i.value); renderRekomendasi();
 }));
@@ -499,6 +502,7 @@ function renderRekomendasi() {
   const hanyaAkum = $("#hanya-akum").checked;
   let tampil = rows.filter(r => !pilih.length || pilih.includes(r.keputusan));
   if (hanyaAkum) tampil = tampil.filter(r => akumulasi(asing[r.kode]));
+  if ($("#hanya-setup").checked) tampil = tampil.filter(r => (r.setup || []).length);
   if (urut === "asing") tampil = [...tampil].sort((a, b) => (+(asing[b.kode] || {}).net_rupiah || -Infinity) - (+(asing[a.kode] || {}).net_rupiah || -Infinity));
   $("#rek-info").textContent = `${rows.length} saham likuid dipindai pada penutupan ${tglID(tgl)}, diurutkan dari nilai ${urut === "asing" ? "net beli asing" : "teknikal"} tertinggi.`;
   const contoh = Object.values(asing)[0];
@@ -506,7 +510,7 @@ function renderRekomendasi() {
     ? `Data asing ${LABEL_PERIODE[hari]}: ${tglID(contoh.tanggal_awal)} sampai ${tglID(contoh.tanggal_akhir)}. Diakumulasi artinya net beli dan net beli di minimal 60% hari.`
     : `Belum ada data asing. Unggah file Ringkasan Saham dari BEI di tab Catat.`;
   renderAsingPasar(asing, hari);
-  if (!tampil.length) { el.innerHTML = `<div class="panel empty">Tidak ada saham yang cocok dengan pilihan ini. Coba "Semua" atau matikan saringan asing.</div>`; return; }
+  if (!tampil.length) { el.innerHTML = `<div class="panel empty">Tidak ada saham yang cocok dengan pilihan ini. Coba "Semua" atau matikan saringan asing dan setup.</div>`; return; }
   el.innerHTML = tampil.map(r => {
     const dipantau = STATE.watch.some(w => w.kode === r.kode && w.aktif);
     const adaDetail = STATE.analisa.some(a => a.kode === r.kode);
@@ -520,6 +524,7 @@ function renderRekomendasi() {
         <div class="kata v-${esc(r.keputusan)}">${esc(r.keputusan)}</div>
       </div>
       <div class="small muted">${(r.pola_candle || []).map(esc).join(", ") || "Tidak ada pola candle khusus"}</div>
+      ${(r.setup || []).length ? `<div class="small"><b style="color:var(--accent)">Setup:</b> ${r.setup.map(k => esc(SETUP[k] || k)).join(", ")}</div>` : ""}
       <div class="strip">${ASPEK.map(([k, n]) => `<div><i><b style="width:${r[k] * 10}%;background:${warnaNilai(r[k])}"></b></i>${n}<b>${fmt(r[k], 1)}</b></div>`).join("")}</div>
       ${ringkasAlasan(r)}
       ${adaAsing ? teksAsing(asing[r.kode], hari) : ""}
@@ -735,7 +740,7 @@ async function bukaEmas() {
 function renderEmas() {
   const el = $("#t-emas"), d = STATE.emas;
   const r = [...d].reverse().find(x => x.nilai_total != null);
-  if (!r) { el.innerHTML = `<div class="panel empty">Belum ada data emas. Data muncul setelah run harian berikutnya (hari bursa pukul 18.15 WITA). Pastikan tabel saham_emas_harian sudah dibuat (supabase/007_emas.sql).</div>`; return; }
+  if (!r) { el.innerHTML = `<div class="panel empty">Belum ada data emas. Data muncul setelah run harian berikutnya (hari bursa pukul 18.15 WITA). Pastikan tabel saham_emas_harian sudah dibuat (supabase/006_setup_dan_emas.sql).</div>`; return; }
   const hist = d.filter(x => x.nilai_total != null);
   const NAMA = { nilai_tren: "Tren", nilai_volume: "Volume", nilai_stochastic: "Stochastic", nilai_momentum: "Momentum", nilai_candle: "Candle" };
   el.innerHTML = `

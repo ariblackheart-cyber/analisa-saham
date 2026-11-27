@@ -9,6 +9,7 @@ Memakai aturan penilaian yang sama dengan analisa.py (skor.py). Saham yang kuran
 Hasil:
     - tabel saham_screener di Supabase (jika SUPABASE_URL/SUPABASE_SERVICE_KEY diisi)
     - tabel 10 teratas di README.md (bagian REKOMENDASI)
+    - daftar setup day trade harian (setup_harian.py) di README.md dan kolom setup di Supabase
 """
 import argparse
 import re
@@ -19,6 +20,7 @@ from pathlib import Path
 import pandas as pd
 
 import db
+import setup_harian
 from analisa import ROOT, IKON, analisa, buang_candle_berjalan, num, rp
 
 MIN_TRANSAKSI = 5e9     # Rp 5 miliar per hari
@@ -83,6 +85,7 @@ def pindai(data: dict[str, pd.DataFrame], final_saja: bool = True):
             lewat.append((kode, f"gagal: {e}"))
             continue
         h["transaksi"] = transaksi
+        h["setup"] = setup_harian.deteksi(df)
         baris.append(h)
     baris.sort(key=lambda h: -h["nilai"]["total"])
     return baris, lewat
@@ -100,6 +103,7 @@ def ke_row(h: dict) -> dict:
         ma20=t["MA20"], ma100=t["MA100"], rsi=t["RSI"], volume_ratio=t["Vol_ratio"],
         nilai_transaksi=h["transaksi"], support=r["support"], stop_loss=r["stop"], target1=r["target1"],
         rincian={k: [{"poin": p, "alasan": s} for p, s in v[1]] for k, v in a.items()},
+        setup=h.get("setup", []),
     )
 
 
@@ -120,9 +124,38 @@ def update_readme(baris: list[dict], jumlah: int):
         pct = (t["Close"] - y["Close"]) / y["Close"] * 100
         L.append(f"| {i} | **{h['kode']}** | {rp(t['Close'])} | {pct:+.2f}% | **{n['total']:.1f}** | "
                  f"{IKON[n['label']]} {n['label']} | " + " | ".join(f"{v[0]:.1f}" for v in n["aspek"].values()) + " |")
+    L += ["", "### Setup day trade", ""] + blok_setup(baris)
     blok = "<!-- REKOMENDASI:START -->\n" + "\n".join(L) + "\n<!-- REKOMENDASI:END -->"
     teks = re.sub(r"<!-- REKOMENDASI:START -->.*?<!-- REKOMENDASI:END -->", blok, teks, flags=re.S)
     readme.write_text(teks, encoding="utf-8")
+
+
+def blok_setup(baris: list[dict]) -> list[str]:
+    ada = sorted((h for h in baris if h.get("setup")), key=lambda h: -h["transaksi"])
+    if not ada:
+        return ["_Tidak ada saham yang cocok dengan aturan setup harian._"]
+    L = ["Saham likuid yang cocok dengan aturan setup harian, diurutkan dari nilai transaksi terbesar. "
+         "Calon watchlist untuk dipantau besok, bukan sinyal beli.", "",
+         "| Saham | Close | Perubahan | Setup | Transaksi/hari | MA20 | RSI |",
+         "|---|---|---|---|---|---|---|"]
+    for h in ada:
+        t, y = h["t"], h["y"]
+        pct = (t["Close"] - y["Close"]) / y["Close"] * 100
+        L.append(f"| **{h['kode']}** | {rp(t['Close'])} | {pct:+.2f}% | {setup_harian.label(h['setup'])} | "
+                 f"Rp {h['transaksi'] / 1e9:.1f} M | {rp(t['MA20'])} | {num(t['RSI'])} |")
+    return L
+
+
+def simpan_supabase(rows: list[dict]):
+    sb = db.Supabase()
+    try:
+        sb.upsert("saham_screener", rows, "kode,tanggal")
+    except RuntimeError as e:
+        if "setup" not in str(e):
+            raise
+        # Kolom setup belum ada: jalankan supabase/006_setup_dan_emas.sql. Sementara simpan tanpa setup.
+        print("Peringatan: kolom setup belum ada di saham_screener, disimpan tanpa setup.")
+        sb.upsert("saham_screener", [{k: v for k, v in r.items() if k != "setup"} for r in rows], "kode,tanggal")
 
 
 def main():
@@ -138,11 +171,15 @@ def main():
         print(f"  - {k}: {alasan}")
     for h in baris[:10]:
         print(f"  {h['kode']:5} {h['nilai']['total']:.1f} {h['nilai']['label']}")
+    ada = [h for h in baris if h.get("setup")]
+    print(f"Setup harian: {len(ada)} saham.")
+    for h in sorted(ada, key=lambda h: -h["transaksi"]):
+        print(f"  {h['kode']:5} {setup_harian.label(h['setup'])}")
     if not baris:
         sys.exit("Tidak ada saham yang lolos pemindaian.")
     update_readme(baris, len(kode_list))
     if db.aktif() and not a.csv_dir:
-        db.Supabase().upsert("saham_screener", [ke_row(h) for h in baris], "kode,tanggal")
+        simpan_supabase([ke_row(h) for h in baris])
         print("Tersimpan ke Supabase.")
 
 

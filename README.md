@@ -36,9 +36,11 @@ Analisa teknikal otomatis untuk saham Bursa Efek Indonesia. Setiap hari bursa, G
 
 Setiap hari bursa, semua saham di `universe.txt` (±85 saham likuid) dinilai dengan aturan yang sama. Saham dengan rata-rata transaksi di bawah Rp 5 miliar/hari dilewati. Daftar lengkap dan alasannya ada di tab **Rekomendasi** di dashboard. Ubah daftar saham di `universe.txt` dan batas likuiditas di `screener.py`.
 
+Pemindai juga menandai **setup day trade harian** (`setup_harian.py`), dari harga penutupan: breakout 20 hari (close di atas semua close 20 sesi sebelumnya), bull flag (naik lebih dari 10% dalam 10 sesi lalu 5 close terakhir dalam rentang 5%), kembali di atas MA20, oversold (RSI 14 di bawah 30), dan pantulan oversold (RSI kemarin di bawah 30 lalu close naik). Hasilnya tampil di bagian **Setup day trade** di atas dan di tab **Rekomendasi** (centang "Hanya yang punya setup day trade"). Untuk menyimpannya ke Supabase, jalankan `supabase/006_setup_dan_emas.sql` sekali. Ini daftar chart yang cocok dengan aturan, bukan sinyal beli.
+
 ## Emas
 
-Tab **Emas** di dashboard menganalisa harga emas setiap hari bursa (`emas.py`). Harga emas dunia (COMEX, USD per troy ounce) dikonversi ke **rupiah per gram** dengan kurs USD/IDR, lalu dinilai dengan aturan yang sama seperti saham: tren, volume, stochastic, momentum, candle, ditambah support/resistance, batas rugi, dan target. Laporannya ada di `reports/EMAS/latest.md`. Ini harga spot hasil konversi, bukan harga jual atau buyback Antam. Untuk menyimpannya ke Supabase, jalankan `supabase/007_emas.sql` sekali.
+Tab **Emas** di dashboard menganalisa harga emas setiap hari bursa (`emas.py`). Harga emas dunia (COMEX, USD per troy ounce) dikonversi ke **rupiah per gram** dengan kurs USD/IDR, lalu dinilai dengan aturan yang sama seperti saham: tren, volume, stochastic, momentum, candle, ditambah support/resistance, batas rugi, dan target. Laporannya ada di `reports/EMAS/latest.md`. Ini harga spot hasil konversi, bukan harga jual atau buyback Antam. Untuk menyimpannya ke Supabase, jalankan `supabase/006_setup_dan_emas.sql` sekali.
 
 ## Data asing
 
@@ -181,6 +183,7 @@ fundamental.py  data laporan keuangan dan nilai fundamental
 saham.txt       daftar saham (jika tidak memakai Supabase)
 db.py           penghubung ke Supabase
 screener.py     pemindai harian untuk tab Rekomendasi
+setup_harian.py aturan setup day trade harian (dipakai screener.py)
 universe.txt    daftar saham yang dipindai
 emas.py         analisa harian emas (Rp/gram) untuk tab Emas
 berita.py       pengambil berita dari feed RSS
