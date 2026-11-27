@@ -304,6 +304,7 @@ input, select { background: var(--surface-2); border: 1px solid var(--line); bor
           <label>Tanggal<input name="tanggal" type="date" required></label>
           <label>Lot<input name="lot" type="number" min="1" step="1" required inputmode="numeric"></label>
           <label>Harga per lembar<input name="harga" type="number" min="1" step="1" required inputmode="numeric"></label>
+          <div class="full small muted" id="lot-info" hidden></div>
           <button class="btn full" type="submit">Simpan transaksi</button>
           <div class="msg full" id="trx-msg" hidden></div>
         </form>
@@ -553,7 +554,9 @@ function renderRingkasan() {
     return;
   }
   if (!STATE.analisa.length) { el.innerHTML = `<div class="panel empty">Belum ada hasil analisa. Hasil muncul setelah workflow harian berjalan.</div>`; saringCari(); return; }
-  el.innerHTML = STATE.analisa.map(r => `
+  const dipegang = new Set(hitungPosisi(STATE.trx).filter(p => p.lembar > 0).map(p => p.kode));
+  const tampil = STATE.watch.length ? STATE.analisa.filter(r => dipegang.has(r.kode) || STATE.watch.some(w => w.kode === r.kode)) : STATE.analisa;
+  el.innerHTML = tampil.map(r => `
     <button class="saham" data-kode="${esc(r.kode)}" aria-label="Buka detail ${esc(r.kode)}">
       <div>
         <div class="kode">${esc(r.kode)}</div>
@@ -679,6 +682,7 @@ async function bukaDetail(kode) {
       </div>
     </div>
     <div class="panel">${ringkasAlasan(r)}</div>
+    ${STATE.watch.some(w => w.kode === kode) ? `<p style="margin:-4px 0 0;text-align:right"><button class="link" data-hapus-pantau="${esc(kode)}" type="button">Hapus ${esc(kode)} dari pantauan</button></p>` : ""}
 
     <div class="panel">
       <div class="chart-label">Harga, MA5, MA20, MA100, Bollinger (20,2)</div><div class="chart" id="c-harga"></div>
@@ -888,7 +892,7 @@ function tabelPosisi(list) {
     const modal = p.avg * p.lembar, pl = harga == null ? null : (harga - p.avg) * p.lembar;
     if (pl != null) { tm += modal; tp += pl; } else adaTanpaHarga = true;
     return `<tr><td><b>${esc(p.kode)}</b>${a ? `<div class="small v-${esc(a.keputusan)}">${esc(a.keputusan)}</div>` : ""}</td>
-      <td class="r">${fmt(p.lembar / LOT)}</td><td class="r">${fmt(p.avg, 1)}</td><td class="r">${fmt(harga)}${!a && cad ? `<div class="small muted">sementara</div>` : ""}</td>
+      <td class="r">${fmt(p.lembar / LOT)}<div><button class="link" style="color:var(--accent);font-weight:700" data-jual="${esc(p.kode)}" type="button">Jual</button></div></td><td class="r">${fmt(p.avg, 1)}</td><td class="r">${fmt(harga)}${!a && cad ? `<div class="small muted">sementara</div>` : ""}</td>
       <td class="r">${fmt(modal)}</td><td class="r ${kelas(pl)}">${fmt(pl)}<div class="small">${pct(modal ? pl / modal * 100 : null)}</div></td></tr>`;
   }).join("");
   const total = list.length > 1 ? `<tr><td><b>Total</b></td><td></td><td></td><td></td><td class="r"><b>${fmt(tm)}</b></td><td class="r ${kelas(tp)}"><b>${fmt(tp)}</b><div class="small">${pct(tm ? tp / tm * 100 : null)}</div></td></tr>` : "";
@@ -1048,8 +1052,10 @@ function renderCatat() {
   const wl = $("#list-watch");
   wl.innerHTML = STATE.watch.length ? `<table><tbody>${STATE.watch.map(w => `<tr><td><b>${esc(w.kode)}</b></td>
     <td class="small muted">${w.aktif ? "Dianalisa setiap hari" : "Dijeda"}</td>
-    <td class="r"><button class="link" style="color:var(--accent)" data-toggle="${esc(w.kode)}" data-aktif="${w.aktif}" type="button">${w.aktif ? "Jeda" : "Aktifkan"}</button></td></tr>`).join("")}</tbody></table>`
+    <td class="r" style="white-space:nowrap"><button class="link" style="color:var(--accent)" data-toggle="${esc(w.kode)}" data-aktif="${w.aktif}" type="button">${w.aktif ? "Jeda" : "Aktifkan"}</button>
+      <button class="link" style="margin-left:14px" data-hapus-watch="${esc(w.kode)}" type="button">Hapus</button></td></tr>`).join("")}</tbody></table>`
     : `<p class="empty">Belum ada saham dipantau.</p>`;
+  wl.querySelectorAll("[data-hapus-watch]").forEach(b => b.addEventListener("click", () => hapusPantauan(b.dataset.hapusWatch)));
   wl.querySelectorAll("[data-toggle]").forEach(b => b.addEventListener("click", async () => {
     const { error } = await sb.from("saham_watchlist").update({ aktif: b.dataset.aktif !== "true" }).eq("kode", b.dataset.toggle);
     if (error) return alert("Gagal menyimpan: " + error.message);
@@ -1057,8 +1063,50 @@ function renderCatat() {
   }));
 }
 
+async function hapusPantauan(kode) {
+  const p = hitungPosisi(STATE.trx).find(x => x.kode === kode && x.lembar > 0);
+  const tanya = p
+    ? `Hapus ${kode} dari daftar pantau?\n\nKamu masih memegang ${fmt(p.lembar / LOT)} lot ${kode}, jadi saham ini tetap dianalisa dan tampil di Pantauan sampai posisinya dijual.`
+    : `Hapus ${kode} dari daftar pantau? Saham ini tidak dianalisa lagi dan hilang dari Pantauan.`;
+  if (!confirm(tanya)) return false;
+  const { error } = await sb.from("saham_watchlist").delete().eq("kode", kode);
+  if (error) { alert("Gagal menghapus: " + error.message); return false; }
+  await muatSemua();
+  return true;
+}
+
+document.addEventListener("click", async e => {
+  const j = e.target.closest("[data-jual]");
+  if (j) return bukaJual(j.dataset.jual);
+  const h = e.target.closest("[data-hapus-pantau]");
+  if (h && await hapusPantauan(h.dataset.hapusPantau)) buka("ringkasan");
+});
+
 const fTrx = $("#f-trx");
 fTrx.tanggal.value = new Date().toLocaleDateString("sv-SE");
+// Saat menjual: tampilkan lot yang dipegang dan tombol untuk mengisi semuanya.
+function infoLot() {
+  const el = $("#lot-info"), kode = fTrx.kode.value.trim().toUpperCase();
+  const jual = fTrx.aksi.value === "jual";
+  const p = kode && hitungPosisi(STATE.trx).find(x => x.kode === kode);
+  const lot = p ? p.lembar / LOT : 0;
+  if (!jual || !kode) { el.hidden = true; return; }
+  el.hidden = false;
+  if (!lot) { el.innerHTML = `Kamu tidak memegang ${esc(kode)}.`; return; }
+  el.innerHTML = `Dipegang <b>${fmt(lot)} lot</b> ${esc(kode)}, rata-rata ${fmt(p.avg)}.
+    <button class="link" style="color:var(--accent);font-weight:700;margin-left:6px" type="button" id="btn-jual-semua">Jual semua (${fmt(lot)} lot)</button>`;
+  $("#btn-jual-semua").onclick = () => { fTrx.lot.value = lot; fTrx.harga.focus(); };
+}
+fTrx.kode.addEventListener("input", infoLot);
+fTrx.querySelectorAll('input[name="aksi"]').forEach(i => i.addEventListener("change", infoLot));
+// Buka form jual dari halaman lain dengan kode dan lot terisi.
+function bukaJual(kode) {
+  buka("catat");
+  fTrx.aksi.value = "jual"; fTrx.kode.value = kode;
+  const p = hitungPosisi(STATE.trx).find(x => x.kode === kode);
+  if (p && p.lembar) fTrx.lot.value = p.lembar / LOT;
+  infoLot(); fTrx.harga.focus();
+}
 fTrx.addEventListener("submit", async e => {
   e.preventDefault();
   const f = new FormData(fTrx), msg = $("#trx-msg"), b = fTrx.querySelector("button");
@@ -1078,6 +1126,7 @@ fTrx.addEventListener("submit", async e => {
   if (!STATE.watch.some(w => w.kode === row.kode)) await sb.from("saham_watchlist").insert({ kode: row.kode });
   fTrx.lot.value = ""; fTrx.harga.value = "";
   await muatSemua();
+  infoLot();
 });
 
 $("#f-watch").addEventListener("submit", async e => {
