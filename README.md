@@ -36,6 +36,8 @@ Analisa teknikal otomatis untuk saham Bursa Efek Indonesia. Setiap hari bursa, G
 
 Setiap hari bursa, semua saham di `universe.txt` (±85 saham likuid) dinilai dengan aturan yang sama. Saham dengan rata-rata transaksi di bawah Rp 5 miliar/hari dilewati. Daftar lengkap dan alasannya ada di tab **Rekomendasi** di dashboard. Ubah daftar saham di `universe.txt` dan batas likuiditas di `screener.py`.
 
+Pemindai juga menandai **setup day trade harian** (`setup_harian.py`), dari harga penutupan: breakout 20 hari (close di atas semua close 20 sesi sebelumnya), bull flag (naik lebih dari 10% dalam 10 sesi lalu 5 close terakhir dalam rentang 5%), kembali di atas MA20, oversold (RSI 14 di bawah 30), dan pantulan oversold (RSI kemarin di bawah 30 lalu close naik). Hasilnya tampil di bagian **Setup day trade** di atas dan di tab **Rekomendasi** (centang "Hanya yang punya setup day trade"). Untuk menyimpannya ke Supabase, jalankan `supabase/006_setup_harian.sql` sekali. Ini daftar chart yang cocok dengan aturan, bukan sinyal beli.
+
 ## Data asing
 
 Data beli/jual asing tidak tersedia di Yahoo Finance, dan situs BEI menolak akses otomatis dari server. Fitur ini **disembunyikan** di dashboard (cek foreign flow langsung di Stockbit); aktifkan dengan mengubah `FITUR_ASING = true` di `docs/index.html`. Jika diaktifkan, datanya diunggah manual: unduh file **Ringkasan Saham** harian dari idx.co.id, lalu unggah di dashboard (tab **Catat**, beberapa file sekaligus boleh). Tab **Rekomendasi** lalu menampilkan net beli asing 1 hari, 1 minggu, dan 1 bulan, bisa diurutkan berdasarkan asing, dan bisa disaring ke saham yang diakumulasi asing (net beli dan net beli di minimal 60% hari).
@@ -177,6 +179,7 @@ fundamental.py  data laporan keuangan dan nilai fundamental
 saham.txt       daftar saham (jika tidak memakai Supabase)
 db.py           penghubung ke Supabase
 screener.py     pemindai harian untuk tab Rekomendasi
+setup_harian.py aturan setup day trade harian (dipakai screener.py)
 universe.txt    daftar saham yang dipindai
 berita.py       pengambil berita dari feed RSS
 feeds.txt       daftar feed berita
