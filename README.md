@@ -9,29 +9,64 @@ Analisa teknikal otomatis untuk saham Bursa Efek Indonesia. Setiap hari bursa, G
 <!-- RINGKASAN:START -->
 | Saham | Tanggal | Close | Perubahan | Tren | Volume | Stoch | Momentum | Candle | Total | Keputusan | Fundamental |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| [BRIS](reports/BRIS/latest.md) | 2026-11-06 | 1.150 | +1.77% | 5.0 | 6.7 | 5.8 | 6.0 | 6.0 | **5.8** | 🟡 PANTAU | 8.9 Kuat |
-| [AALI](reports/AALI/latest.md) | 2026-11-06 | 9.450 | +1.61% | 8.0 | 4.7 | 3.5 | 4.5 | 8.3 | **5.8** | 🟡 PANTAU | 10.0 Kuat |
-| [RAJA](reports/RAJA/latest.md) | 2026-11-06 | 392 | +1.55% | 2.0 | 6.4 | 8.0 | 4.0 | 6.0 | **5.1** | ⚪ TUNGGU | 8.2 Kuat |
-| [BBRI](reports/BBRI/latest.md) | 2026-11-06 | 2.810 | +3.69% | 2.0 | 5.6 | 8.0 | 3.0 | 8.1 | **5.0** | ⚪ TUNGGU | 8.5 Kuat |
+| [BBRI](reports/BBRI/latest.md) | 2026-11-27 | 3.100 | +0.65% | 10.0 | 6.4 | 3.5 | 7.5 | 5.8 | **6.8** | 🟡 PANTAU | 9.0 Kuat |
+| [BRIS](reports/BRIS/latest.md) | 2026-11-27 | 1.195 | +2.58% | 7.0 | 4.8 | 3.5 | 5.5 | 8.1 | **5.7** | 🟡 PANTAU | 8.9 Kuat |
+| [RAJA](reports/RAJA/latest.md) | 2026-11-27 | 436 | +6.34% | 2.0 | 5.6 | 3.5 | 6.0 | 6.3 | **4.5** | ⚪ TUNGGU | 8.2 Kuat |
+| [AALI](reports/AALI/latest.md) | 2026-11-27 | 9.450 | -0.26% | 3.0 | 3.2 | 7.2 | 4.5 | 4.8 | **4.5** | ⚪ TUNGGU | 10.0 Kuat |
 <!-- RINGKASAN:END -->
 
 ## Rekomendasi teknikal
 
 <!-- REKOMENDASI:START -->
-10 nilai teknikal tertinggi dari 81 saham likuid yang dipindai (2026-11-06). Hasil aturan mekanis, bukan rekomendasi investasi.
+10 nilai teknikal tertinggi dari 81 saham likuid yang dipindai (2026-11-27). Hasil aturan mekanis, bukan rekomendasi investasi.
 
 | # | Saham | Close | Perubahan | Total | Keputusan | Tren | Volume | Stoch | Momentum | Candle |
 |---|---|---|---|---|---|---|---|---|---|---|
-| 1 | **ASII** | 5.000 | +1.42% | **7.6** | 🟢 BELI | 10.0 | 6.3 | 5.0 | 9.5 | 6.3 |
-| 2 | **INTP** | 5.800 | +0.00% | **7.4** | 🟢 BELI | 10.0 | 5.3 | 5.8 | 9.5 | 5.5 |
-| 3 | **LSIP** | 1.505 | +3.44% | **6.6** | 🟡 PANTAU | 8.0 | 6.0 | 5.0 | 7.5 | 6.1 |
-| 4 | **ACES** | 338 | +1.20% | **6.6** | 🟡 PANTAU | 7.0 | 5.7 | 6.5 | 7.5 | 5.8 |
-| 5 | **SMRA** | 252 | +1.61% | **6.5** | 🟡 PANTAU | 7.0 | 6.4 | 6.5 | 6.0 | 6.2 |
-| 6 | **ICBP** | 6.325 | +3.27% | **6.3** | 🟡 PANTAU | 5.0 | 7.6 | 5.8 | 7.5 | 6.2 |
-| 7 | **HMSP** | 650 | +0.78% | **6.2** | 🟡 PANTAU | 7.0 | 4.9 | 5.8 | 7.5 | 5.6 |
-| 8 | **INDF** | 6.875 | +2.23% | **6.2** | 🟡 PANTAU | 5.0 | 7.7 | 5.0 | 7.5 | 5.9 |
-| 9 | **UNVR** | 1.515 | +4.12% | **6.1** | 🟡 PANTAU | 5.0 | 6.5 | 5.8 | 7.5 | 6.2 |
-| 10 | **JSMR** | 2.770 | +0.73% | **6.1** | 🟡 PANTAU | 8.0 | 4.6 | 2.0 | 7.5 | 8.5 |
+| 1 | **INTP** | 6.300 | +1.61% | **8.0** | 🟢 BELI | 10.0 | 7.6 | 5.0 | 9.5 | 7.2 |
+| 2 | **ASII** | 5.750 | +1.32% | **8.0** | 🟢 BELI | 10.0 | 7.6 | 5.8 | 9.5 | 6.1 |
+| 3 | **MAPA** | 640 | +4.07% | **8.0** | 🟢 BELI | 10.0 | 6.3 | 5.8 | 9.5 | 7.9 |
+| 4 | **KLBF** | 820 | +1.86% | **7.7** | 🟢 BELI | 10.0 | 7.1 | 5.0 | 9.5 | 5.6 |
+| 5 | **AVIA** | 340 | +1.80% | **7.4** | 🟢 BELI | 10.0 | 7.6 | 3.5 | 9.5 | 5.5 |
+| 6 | **INDF** | 7.200 | +1.05% | **7.2** | 🟢 BELI | 10.0 | 6.5 | 3.5 | 9.5 | 5.6 |
+| 7 | **BBCA** | 6.000 | +1.69% | **7.2** | 🟢 BELI | 7.0 | 7.7 | 5.0 | 9.5 | 6.4 |
+| 8 | **UNVR** | 1.665 | +0.91% | **7.1** | 🟢 BELI | 10.0 | 7.6 | 5.0 | 7.5 | 3.9 |
+| 9 | **SMGR** | 1.600 | +3.56% | **7.0** | 🟢 BELI | 10.0 | 4.2 | 3.5 | 7.5 | 10.0 |
+| 10 | **BBNI** | 3.610 | +0.84% | **6.9** | 🟡 PANTAU | 10.0 | 4.2 | 5.8 | 7.5 | 6.1 |
+
+### Setup day trade
+
+Saham likuid yang cocok dengan aturan setup harian, diurutkan dari nilai transaksi terbesar. Calon watchlist untuk dipantau besok, bukan sinyal beli.
+
+| Saham | Close | Perubahan | Setup | Transaksi/hari | MA20 | RSI |
+|---|---|---|---|---|---|---|
+| **BBCA** | 6.000 | +1.69% | Breakout 20 hari | Rp 1052.4 M | 5.462 | 64.4 |
+| **BMRI** | 4.020 | +0.75% | Breakout 20 hari | Rp 548.3 M | 3.832 | 62.1 |
+| **ASII** | 5.750 | +1.32% | Breakout 20 hari | Rp 255.9 M | 5.324 | 67.3 |
+| **ANTM** | 2.720 | +3.03% | Kembali di atas MA20 | Rp 196.7 M | 2.670 | 49.7 |
+| **TPIA** | 1.305 | +10.13% | Kembali di atas MA20 | Rp 172.6 M | 1.253 | 50.3 |
+| **GOTO** | 26 | -3.70% | Bull flag | Rp 168.3 M | 26 | 43.3 |
+| **INCO** | 3.500 | +2.94% | Kembali di atas MA20 | Rp 49.9 M | 3.418 | 48.0 |
+| **EXCL** | 1.735 | +2.06% | Breakout 20 hari, Bull flag | Rp 41.2 M | 1.601 | 51.3 |
+| **UNVR** | 1.665 | +0.91% | Breakout 20 hari | Rp 35.4 M | 1.524 | 70.1 |
+| **KLBF** | 820 | +1.86% | Breakout 20 hari | Rp 28.9 M | 768 | 66.0 |
+| **NCKL** | 725 | +2.11% | Kembali di atas MA20 | Rp 28.8 M | 723 | 46.5 |
+| **ERAA** | 515 | +3.00% | Kembali di atas MA20 | Rp 24.4 M | 504 | 48.0 |
+| **AKRA** | 1.295 | +2.37% | Kembali di atas MA20 | Rp 20.6 M | 1.290 | 48.1 |
+| **EMTK** | 268 | +4.69% | Pantulan oversold | Rp 15.9 M | 287 | 35.0 |
+| **SMGR** | 1.600 | +3.56% | Bull flag | Rp 15.1 M | 1.520 | 57.6 |
+| **MIKA** | 1.490 | +0.34% | Breakout 20 hari | Rp 11.3 M | 1.361 | 60.1 |
+| **MYOR** | 1.520 | -1.30% | Bull flag | Rp 11.1 M | 1.442 | 58.4 |
+| **PWON** | 312 | +1.30% | Breakout 20 hari | Rp 10.9 M | 276 | 71.2 |
+| **MAPA** | 640 | +4.07% | Breakout 20 hari, Bull flag | Rp 10.8 M | 599 | 61.5 |
+| **AVIA** | 340 | +1.80% | Breakout 20 hari | Rp 10.3 M | 308 | 64.9 |
+| **INTP** | 6.300 | +1.61% | Breakout 20 hari | Rp 8.7 M | 5.929 | 66.4 |
+| **HRUM** | 675 | +1.50% | Kembali di atas MA20 | Rp 8.1 M | 670 | 45.4 |
+| **BUKA** | 118 | +0.85% | Bull flag | Rp 7.7 M | 109 | 62.7 |
+| **CMRY** | 4.260 | +3.40% | Kembali di atas MA20 | Rp 7.6 M | 4.208 | 51.8 |
+| **TKIM** | 5.675 | +4.13% | Pantulan oversold | Rp 6.6 M | 5.929 | 38.0 |
+| **MTEL** | 262 | +3.97% | Oversold (RSI < 30), Pantulan oversold | Rp 6.5 M | 312 | 25.0 |
+| **MAPI** | 1.035 | +0.98% | Oversold (RSI < 30), Pantulan oversold | Rp 6.1 M | 1.157 | 28.3 |
+| **SCMA** | 135 | +1.50% | Kembali di atas MA20 | Rp 5.4 M | 134 | 43.1 |
 <!-- REKOMENDASI:END -->
 
 Setiap hari bursa, semua saham di `universe.txt` (±85 saham likuid) dinilai dengan aturan yang sama. Saham dengan rata-rata transaksi di bawah Rp 5 miliar/hari dilewati. Daftar lengkap dan alasannya ada di tab **Rekomendasi** di dashboard. Ubah daftar saham di `universe.txt` dan batas likuiditas di `screener.py`.
