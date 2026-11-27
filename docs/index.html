@@ -79,7 +79,7 @@ html:not(.asing-aktif) .fitur-asing { display: none !important; }
 /* tabs (bottom on mobile) */
 .tabs { position: fixed; left: 0; right: 0; bottom: 0; z-index: 6; background: var(--surface);
   border-top: 1px solid var(--line); padding-bottom: env(safe-area-inset-bottom); }
-.tabs .wrap { display: grid; grid-template-columns: repeat(4, 1fr); padding: 0 4px; }
+.tabs .wrap { display: grid; grid-template-columns: repeat(5, 1fr); padding: 0 4px; }
 .tabs button { background: none; border: 0; padding: 14px 2px; font-weight: 600; font-size: 13px; color: var(--muted); cursor: pointer; }
 .tabs button[aria-selected="true"] { color: var(--accent); box-shadow: inset 0 3px 0 var(--accent); }
 @media (min-width: 760px) {
@@ -226,6 +226,7 @@ input, select { background: var(--surface-2); border: 1px solid var(--line); bor
     <div class="wrap">
       <button role="tab" data-tab="ringkasan" aria-selected="true">Pantauan</button>
       <button role="tab" data-tab="rekomendasi" aria-selected="false">Rekomendasi</button>
+      <button role="tab" data-tab="emas" aria-selected="false">Emas</button>
       <button role="tab" data-tab="portofolio" aria-selected="false">Portofolio</button>
       <button role="tab" data-tab="catat" aria-selected="false">Catat</button>
     </div>
@@ -261,6 +262,7 @@ input, select { background: var(--surface-2); border: 1px solid var(--line); bor
           <label><input type="radio" name="rek" value="BELI,PANTAU" checked><span>BELI + PANTAU</span></label>
           <label><input type="radio" name="rek" value=""><span>Semua</span></label>
         </div>
+        <label class="cek"><input type="checkbox" id="hanya-setup"> Hanya yang punya setup day trade</label>
         <div class="fitur-asing">
         <div class="ctl-row">
           <span class="small muted">Urutkan</span>
@@ -285,6 +287,8 @@ input, select { background: var(--surface-2); border: 1px solid var(--line); bor
       <div class="saham-list" id="list-rek"></div>
       <p class="small muted" style="margin:0">Hasil aturan teknikal mekanis, bukan rekomendasi investasi. Tidak memperhitungkan berita, fundamental, atau kondisi pasar. Selalu gunakan batas rugi.</p>
     </section>
+
+    <section class="view" id="t-emas" hidden></section>
 
     <section class="view" id="t-portofolio" hidden></section>
 
@@ -428,8 +432,9 @@ document.querySelectorAll(".tabs button").forEach(b => b.addEventListener("click
 function buka(tab) {
   STATE.tab = tab;
   document.querySelectorAll(".tabs button").forEach(b => b.setAttribute("aria-selected", b.dataset.tab === tab));
-  for (const id of ["ringkasan", "rekomendasi", "portofolio", "catat", "detail"]) $("#t-" + id).hidden = id !== tab;
+  for (const id of ["ringkasan", "rekomendasi", "emas", "portofolio", "catat", "detail"]) $("#t-" + id).hidden = id !== tab;
   if (tab === "rekomendasi" && !STATE.rek) muatRekomendasi();
+  if (tab === "emas") bukaEmas();
   window.scrollTo(0, 0);
 }
 function render() { renderRingkasan(); renderPortofolio(); renderCatat(); if (STATE.rek) renderRekomendasi(); }
@@ -482,6 +487,8 @@ function teksAsing(a, hari) {
 }
 document.querySelectorAll('input[name="rek"], input[name="urut"]').forEach(i => i.addEventListener("change", renderRekomendasi));
 $("#hanya-akum").addEventListener("change", renderRekomendasi);
+$("#hanya-setup").addEventListener("change", renderRekomendasi);
+const SETUP = { breakout_20d: "Breakout 20 hari", bull_flag: "Bull flag", reclaim_ma20: "Kembali di atas MA20", oversold: "Oversold (RSI < 30)", oversold_bounce: "Pantulan oversold" };
 document.querySelectorAll('input[name="periode"]').forEach(i => i.addEventListener("change", async () => {
   await muatAsing(+i.value); renderRekomendasi();
 }));
@@ -495,6 +502,7 @@ function renderRekomendasi() {
   const hanyaAkum = $("#hanya-akum").checked;
   let tampil = rows.filter(r => !pilih.length || pilih.includes(r.keputusan));
   if (hanyaAkum) tampil = tampil.filter(r => akumulasi(asing[r.kode]));
+  if ($("#hanya-setup").checked) tampil = tampil.filter(r => (r.setup || []).length);
   if (urut === "asing") tampil = [...tampil].sort((a, b) => (+(asing[b.kode] || {}).net_rupiah || -Infinity) - (+(asing[a.kode] || {}).net_rupiah || -Infinity));
   $("#rek-info").textContent = `${rows.length} saham likuid dipindai pada penutupan ${tglID(tgl)}, diurutkan dari nilai ${urut === "asing" ? "net beli asing" : "teknikal"} tertinggi.`;
   const contoh = Object.values(asing)[0];
@@ -502,7 +510,7 @@ function renderRekomendasi() {
     ? `Data asing ${LABEL_PERIODE[hari]}: ${tglID(contoh.tanggal_awal)} sampai ${tglID(contoh.tanggal_akhir)}. Diakumulasi artinya net beli dan net beli di minimal 60% hari.`
     : `Belum ada data asing. Unggah file Ringkasan Saham dari BEI di tab Catat.`;
   renderAsingPasar(asing, hari);
-  if (!tampil.length) { el.innerHTML = `<div class="panel empty">Tidak ada saham yang cocok dengan pilihan ini. Coba "Semua" atau matikan saringan asing.</div>`; return; }
+  if (!tampil.length) { el.innerHTML = `<div class="panel empty">Tidak ada saham yang cocok dengan pilihan ini. Coba "Semua" atau matikan saringan asing dan setup.</div>`; return; }
   el.innerHTML = tampil.map(r => {
     const dipantau = STATE.watch.some(w => w.kode === r.kode && w.aktif);
     const adaDetail = STATE.analisa.some(a => a.kode === r.kode);
@@ -516,6 +524,7 @@ function renderRekomendasi() {
         <div class="kata v-${esc(r.keputusan)}">${esc(r.keputusan)}</div>
       </div>
       <div class="small muted">${(r.pola_candle || []).map(esc).join(", ") || "Tidak ada pola candle khusus"}</div>
+      ${(r.setup || []).length ? `<div class="small"><b style="color:var(--accent)">Setup:</b> ${r.setup.map(k => esc(SETUP[k] || k)).join(", ")}</div>` : ""}
       <div class="strip">${ASPEK.map(([k, n]) => `<div><i><b style="width:${r[k] * 10}%;background:${warnaNilai(r[k])}"></b></i>${n}<b>${fmt(r[k], 1)}</b></div>`).join("")}</div>
       ${ringkasAlasan(r)}
       ${adaAsing ? teksAsing(asing[r.kode], hari) : ""}
@@ -644,6 +653,7 @@ async function bukaDetail(kode) {
   const r = STATE.analisa.find(x => x.kode === kode);
   const el = $("#t-detail");
   if (STATE.tab !== "detail") STATE.asal = STATE.tab;
+  $("#t-emas").innerHTML = "";   // grafik emas dan detail saham memakai id elemen yang sama
   buka("detail");
   el.innerHTML = `<button class="back" type="button" id="btn-back">Kembali</button><div class="panel empty">Memuat ${esc(kode)}…</div>`;
   $("#btn-back").onclick = () => buka(STATE.asal || "ringkasan");
@@ -715,6 +725,75 @@ async function bukaDetail(kode) {
     if (el) el.innerHTML = daftarBerita(rows.slice(0, 15), `Belum ada berita 30 hari terakhir yang menyebut ${esc(kode)}.`); });
 }
 
+// ---------------------------------------------------------------- emas
+async function bukaEmas() {
+  const el = $("#t-emas");
+  $("#t-detail").innerHTML = "";   // grafik emas dan detail saham memakai id elemen yang sama
+  if (!STATE.emas) {
+    el.innerHTML = `<div class="panel empty">Memuat emas…</div>`;
+    const { data, error } = await sb.from("saham_emas_harian").select("*").order("tanggal").limit(1000);
+    if (error) console.error(error);
+    STATE.emas = (data || []).map(x => ({ ...x, open: +x.open, high: +x.high, low: +x.low, close: +x.close, volume: +x.volume }));
+  }
+  if (STATE.tab === "emas") renderEmas();
+}
+function renderEmas() {
+  const el = $("#t-emas"), d = STATE.emas;
+  const r = [...d].reverse().find(x => x.nilai_total != null);
+  if (!r) { el.innerHTML = `<div class="panel empty">Belum ada data emas. Data muncul setelah run harian berikutnya (hari bursa pukul 18.15 WITA). Pastikan tabel saham_emas_harian sudah dibuat (supabase/006_setup_dan_emas.sql).</div>`; return; }
+  const hist = d.filter(x => x.nilai_total != null);
+  const NAMA = { nilai_tren: "Tren", nilai_volume: "Volume", nilai_stochastic: "Stochastic", nilai_momentum: "Momentum", nilai_candle: "Candle" };
+  el.innerHTML = `
+    <div class="detail-head">
+      <div>
+        <div class="kode">Emas</div>
+        <div>Rp ${fmt(r.close)}/gram <span class="${kelas(r.perubahan_pct)}">${pct(r.perubahan_pct)}</span> <span class="muted small">${tglID(r.tanggal)}</span></div>
+        <div class="small muted">USD ${fmt(r.usd_oz, 2)}/oz · kurs Rp ${fmt(r.kurs)}</div>
+      </div>
+      <div class="verdict" style="grid-row:auto">
+        <div class="skor">${fmt(r.nilai_total, 1)}<small>/10</small></div>
+        <div class="kata v-${esc(r.keputusan)}">${esc(r.keputusan)}</div>
+      </div>
+    </div>
+    <div class="panel">${ringkasAlasan(r)}</div>
+
+    <div class="panel">
+      <div class="chart-label">Harga Rp/gram, MA5, MA20, MA100, Bollinger (20,2)</div><div class="chart" id="c-harga"></div>
+      <div class="chart-label">Volume kontrak emas (COMEX)</div><div class="chart" id="c-vol"></div>
+      <div class="chart-label">MACD (12,26,9)</div><div class="chart" id="c-macd"></div>
+      <div class="chart-label">Stoch RSI (14,14,3,3)</div><div class="chart" id="c-srsi"></div>
+    </div>
+
+    <div class="grid2">
+      <div class="panel">
+        <h2>Kenapa nilainya ${fmt(r.nilai_total, 1)}</h2>
+        <div class="aspek">${ASPEK.map(([k, n]) => {
+          const rinci = (r.rincian || {})[NAMA[k]] || [];
+          return `<details><summary><span>${n}</span><span style="color:${warnaNilai(r[k])}">${fmt(r[k], 1)}</span></summary>
+            <ul>${rinci.map(x => `<li><span class="${kelas(x.poin)}">${x.poin > 0 ? "+" : ""}${fmt(x.poin, 2)}</span> ${esc(x.alasan)}</li>`).join("") || "<li>Tidak ada rincian.</li>"}</ul></details>`;
+        }).join("")}</div>
+        <p class="small muted" style="margin:12px 0 0">Aturan penilaian sama dengan saham. Bobot: Tren 25%, Volume 20%, Stoch 20%, Momentum 20%, Candle 15%.</p>
+      </div>
+      <div class="panel">
+        <h2>Level harga (Rp/gram)</h2>
+        <dl class="kv">
+          <dt>Support 20 hari</dt><dd>${fmt(r.support)}</dd>
+          <dt>Resistance 20 hari</dt><dd>${fmt(r.resistance)}</dd>
+          <dt>Batas rugi</dt><dd class="turun">${fmt(r.stop_loss)}</dd>
+          <dt>Target 1</dt><dd class="naik">${fmt(r.target1)}</dd>
+          <dt>Target 2</dt><dd class="naik">${fmt(r.target2)}</dd>
+          <dt>MA20</dt><dd>${fmt(r.ma20)}</dd>
+          <dt>MA100</dt><dd>${fmt(r.ma100)}</dd>
+          <dt>RSI (14)</dt><dd>${fmt(r.rsi, 1)}</dd>
+        </dl>
+        <h3 style="margin-top:16px">Riwayat nilai total</h3>
+        ${sparkline(hist)}
+      </div>
+    </div>
+    <p class="small muted">Harga spot emas dunia (COMEX) dikonversi ke rupiah per gram dengan kurs USD/IDR. Ini bukan harga jual atau buyback Antam, yang biasanya lebih tinggi karena premi dan selisih jual-beli. Keputusan berasal dari aturan teknikal mekanis, bukan rekomendasi.</p>`;
+  gambarChart(d);
+}
+
 function sparkline(rows) {
   if (rows.length < 2) return `<p class="small muted">Riwayat akan terisi setiap hari bursa.</p>`;
   const w = 300, h = 64, xs = i => i / (rows.length - 1) * w, ys = v => h - v / 10 * h;
@@ -737,6 +816,7 @@ function gambarChart(d) {
       grid: { vertLines: { visible: false }, horzLines: { color: v("--line") } },
       rightPriceScale: { borderVisible: false, minimumWidth: 64 }, timeScale: { borderVisible: false, visible: id === "#c-srsi" },
       crosshair: { mode: 0 }, handleScroll: true, handleScale: true,
+      localization: { priceFormatter: x => Math.abs(x) >= 1000 ? fmt(x) : fmt(x, 2) },
     });
     CHARTS.push(ch); return ch;
   };

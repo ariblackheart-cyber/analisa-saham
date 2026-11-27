@@ -44,6 +44,14 @@ jobs:
           SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
         run: python screener.py
 
+      - name: Analisa emas
+        # Tidak menggagalkan workflow; analisa saham tetap tersimpan walau data emas gagal.
+        continue-on-error: true
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_KEY }}
+        run: python emas.py
+
       - name: Simpan hasil ke repo
         run: |
           git config user.name "github-actions[bot]"
