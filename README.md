@@ -36,6 +36,10 @@ Analisa teknikal otomatis untuk saham Bursa Efek Indonesia. Setiap hari bursa, G
 
 Setiap hari bursa, semua saham di `universe.txt` (±85 saham likuid) dinilai dengan aturan yang sama. Saham dengan rata-rata transaksi di bawah Rp 5 miliar/hari dilewati. Daftar lengkap dan alasannya ada di tab **Rekomendasi** di dashboard. Ubah daftar saham di `universe.txt` dan batas likuiditas di `screener.py`.
 
+## Emas
+
+Tab **Emas** di dashboard menganalisa harga emas setiap hari bursa (`emas.py`). Harga emas dunia (COMEX, USD per troy ounce) dikonversi ke **rupiah per gram** dengan kurs USD/IDR, lalu dinilai dengan aturan yang sama seperti saham: tren, volume, stochastic, momentum, candle, ditambah support/resistance, batas rugi, dan target. Laporannya ada di `reports/EMAS/latest.md`. Ini harga spot hasil konversi, bukan harga jual atau buyback Antam. Untuk menyimpannya ke Supabase, jalankan `supabase/007_emas.sql` sekali.
+
 ## Data asing
 
 Data beli/jual asing tidak tersedia di Yahoo Finance, dan situs BEI menolak akses otomatis dari server. Fitur ini **disembunyikan** di dashboard (cek foreign flow langsung di Stockbit); aktifkan dengan mengubah `FITUR_ASING = true` di `docs/index.html`. Jika diaktifkan, datanya diunggah manual: unduh file **Ringkasan Saham** harian dari idx.co.id, lalu unggah di dashboard (tab **Catat**, beberapa file sekaligus boleh). Tab **Rekomendasi** lalu menampilkan net beli asing 1 hari, 1 minggu, dan 1 bulan, bisa diurutkan berdasarkan asing, dan bisa disaring ke saham yang diakumulasi asing (net beli dan net beli di minimal 60% hari).
@@ -178,6 +182,7 @@ saham.txt       daftar saham (jika tidak memakai Supabase)
 db.py           penghubung ke Supabase
 screener.py     pemindai harian untuk tab Rekomendasi
 universe.txt    daftar saham yang dipindai
+emas.py         analisa harian emas (Rp/gram) untuk tab Emas
 berita.py       pengambil berita dari feed RSS
 feeds.txt       daftar feed berita
 supabase/       skema database dan aturan akses dashboard
